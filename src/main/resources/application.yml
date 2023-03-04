@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://w1.eren.wtf:5432/gamebuddyDB
+    username: gamebuddy
+    password: 3uT4}dpjK2PUk2#n
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      format_sql: true
+      default_schema: schauth
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: noreply.gamebuddy@gmail.com
+    password: symikbrjjpvsqhlt
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+server:
+  port: 4567
