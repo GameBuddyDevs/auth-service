@@ -2,6 +2,9 @@ package com.back2261.authservice.application.controller;
 
 import com.back2261.authservice.domain.service.AuthService;
 import com.back2261.authservice.interfaces.request.RegisterRequest;
+import com.back2261.authservice.interfaces.request.VerifyRequest;
+import com.back2261.authservice.interfaces.response.DefaultMessageResponse;
+import com.back2261.authservice.interfaces.response.RegisterResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +23,12 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
-        return new ResponseEntity<>(authService.register(registerRequest), HttpStatus.OK);
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        return new ResponseEntity<>(authService.register(registerRequest), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/verify")
+    public ResponseEntity<DefaultMessageResponse> verifyCode(@Valid @RequestBody VerifyRequest registerRequest) {
+        return new ResponseEntity<>(authService.verifyCode(registerRequest), HttpStatus.OK);
     }
 }
