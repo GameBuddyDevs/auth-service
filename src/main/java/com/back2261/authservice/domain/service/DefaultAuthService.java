@@ -7,15 +7,16 @@ import com.back2261.authservice.infrastructure.entity.User;
 import com.back2261.authservice.infrastructure.entity.VerificationCode;
 import com.back2261.authservice.infrastructure.repository.UserRepository;
 import com.back2261.authservice.infrastructure.repository.VerificationCodeRepository;
+import com.back2261.authservice.interfaces.dto.DefaultMessageBody;
 import com.back2261.authservice.interfaces.dto.RegisterResponseBody;
 import com.back2261.authservice.interfaces.enums.TransactionCode;
 import com.back2261.authservice.interfaces.request.RegisterRequest;
+import com.back2261.authservice.interfaces.request.UsernameRequest;
+import com.back2261.authservice.interfaces.request.VerifyRequest;
+import com.back2261.authservice.interfaces.response.DefaultMessageResponse;
 import com.back2261.authservice.interfaces.response.RegisterResponse;
 import com.back2261.authservice.util.Constants;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,12 +63,76 @@ public class DefaultAuthService implements AuthService {
         return registerResponse;
     }
 
+    @Override
+    public DefaultMessageResponse verifyCode(VerifyRequest verifyRequest) {
+        String email = verifyRequest.getEmail();
+        Integer code = verifyRequest.getVerificationCode();
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isEmpty()) {
+            throw new BusinessException(TransactionCode.USER_NOT_FOUND);
+        }
+        User user = userOptional.get();
+        if (user.getIsVerified()) {
+            throw new BusinessException(TransactionCode.USER_ALREADY_VERIFIED);
+        }
+        Optional<VerificationCode> verificationCodeOptional =
+                verificationCodeRepository.findByEmailAndCodeAndIsValidTrue(email, code);
+        if (verificationCodeOptional.isEmpty()) {
+            throw new BusinessException(TransactionCode.VERIFICATION_CODE_NOT_FOUND);
+        }
+        VerificationCode verificationCode = verificationCodeOptional.get();
+        verificationCode.setIsValid(false);
+        verificationCodeRepository.save(verificationCode);
+
+        user.setIsVerified(true);
+        userRepository.save(user);
+        DefaultMessageResponse verifyResponse = new DefaultMessageResponse();
+        DefaultMessageBody body = new DefaultMessageBody("User verified successfully");
+        verifyResponse.setBody(new BaseBody<>(body));
+        verifyResponse.setStatus(new Status(TransactionCode.DEFAULT_100));
+        return verifyResponse;
+    }
+
+    @Override
+    public DefaultMessageResponse setUsername(UsernameRequest usernameRequest) {
+        String username = usernameRequest.getUsername();
+        String email = usernameRequest.getEmail();
+        Optional<User> userOptional = userRepository.findByEmail(email);
+
+        if (userOptional.isEmpty()) {
+            throw new BusinessException(TransactionCode.USER_NOT_FOUND);
+        }
+        User user = userOptional.get();
+        if (!user.getIsVerified()) {
+            throw new BusinessException(TransactionCode.USER_NOT_VERIFIED);
+        }
+        Optional<User> usernameCheckOptional = userRepository.findByUsername(username);
+
+        if (usernameCheckOptional.isPresent()) {
+            User usernameCheck = usernameCheckOptional.get();
+            if (!Objects.equals(usernameCheck.getUserId(), user.getUserId())) {
+                throw new BusinessException(TransactionCode.USERNAME_EXISTS);
+            }
+        }
+
+        if (!Objects.equals(user.getUsername(), username)) {
+            user.setUsername(username);
+            userRepository.save(user);
+        }
+
+        DefaultMessageResponse verifyResponse = new DefaultMessageResponse();
+        DefaultMessageBody body = new DefaultMessageBody("Username set successfully");
+        verifyResponse.setBody(new BaseBody<>(body));
+        verifyResponse.setStatus(new Status(TransactionCode.DEFAULT_100));
+        return verifyResponse;
+    }
+
     private void sendVerificationEmail(String email) {
         List<VerificationCode> verificationCodes = verificationCodeRepository.findAllByEmail(email);
         if (verificationCodes.size() > 0) {
             verificationCodes.forEach(verificationCode -> verificationCode.setIsValid(false));
         }
-        Integer code = new Random().nextInt(999999) + 100000;
+        Integer code = new Random().nextInt(900000) + 100000;
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
