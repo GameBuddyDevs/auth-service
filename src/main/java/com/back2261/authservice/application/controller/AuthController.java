@@ -2,16 +2,14 @@ package com.back2261.authservice.application.controller;
 
 import com.back2261.authservice.domain.service.AuthService;
 import com.back2261.authservice.interfaces.request.RegisterRequest;
+import com.back2261.authservice.interfaces.request.UsernameRequest;
 import com.back2261.authservice.interfaces.request.VerifyRequest;
 import com.back2261.authservice.interfaces.response.DefaultMessageResponse;
 import com.back2261.authservice.interfaces.response.RegisterResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -30,5 +28,10 @@ public class AuthController {
     @PostMapping("/verify")
     public ResponseEntity<DefaultMessageResponse> verifyCode(@Valid @RequestBody VerifyRequest registerRequest) {
         return new ResponseEntity<>(authService.verifyCode(registerRequest), HttpStatus.OK);
+    }
+
+    @PostMapping("/username")
+    public ResponseEntity<DefaultMessageResponse> setUsername(@Valid @RequestBody UsernameRequest usernameRequest) {
+        return new ResponseEntity<>(authService.setUsername(usernameRequest), HttpStatus.OK);
     }
 }
