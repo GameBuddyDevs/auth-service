@@ -1,6 +1,5 @@
 package com.back2261.authservice.interfaces.request;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,9 +8,8 @@ import lombok.Setter;
 @Setter
 public class UsernameRequest {
     @NotBlank
-    private String username;
+    private String userId;
 
-    @Email
     @NotBlank
-    private String email;
+    private String username;
 }

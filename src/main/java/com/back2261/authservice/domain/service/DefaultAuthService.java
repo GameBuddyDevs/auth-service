@@ -65,9 +65,9 @@ public class DefaultAuthService implements AuthService {
 
     @Override
     public DefaultMessageResponse verifyCode(VerifyRequest verifyRequest) {
-        String email = verifyRequest.getEmail();
+        String userId = verifyRequest.getUserId();
         Integer code = verifyRequest.getVerificationCode();
-        Optional<User> userOptional = userRepository.findByEmail(email);
+        Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new BusinessException(TransactionCode.USER_NOT_FOUND);
         }
@@ -75,6 +75,7 @@ public class DefaultAuthService implements AuthService {
         if (user.getIsVerified()) {
             throw new BusinessException(TransactionCode.USER_ALREADY_VERIFIED);
         }
+        String email = user.getEmail();
         Optional<VerificationCode> verificationCodeOptional =
                 verificationCodeRepository.findByEmailAndCodeAndIsValidTrue(email, code);
         if (verificationCodeOptional.isEmpty()) {
@@ -96,8 +97,8 @@ public class DefaultAuthService implements AuthService {
     @Override
     public DefaultMessageResponse setUsername(UsernameRequest usernameRequest) {
         String username = usernameRequest.getUsername();
-        String email = usernameRequest.getEmail();
-        Optional<User> userOptional = userRepository.findByEmail(email);
+        String userId = usernameRequest.getUserId();
+        Optional<User> userOptional = userRepository.findById(userId);
 
         if (userOptional.isEmpty()) {
             throw new BusinessException(TransactionCode.USER_NOT_FOUND);

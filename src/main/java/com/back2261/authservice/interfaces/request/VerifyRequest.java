@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class VerifyRequest {
     @NotBlank
-    private String email;
+    private String userId;
 
     @NotNull
     private Integer verificationCode;
