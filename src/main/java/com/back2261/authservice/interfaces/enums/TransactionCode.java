@@ -11,6 +11,8 @@ public enum TransactionCode {
     USER_NOT_FOUND(103, "User not found", HttpStatus.BAD_REQUEST),
     USER_ALREADY_VERIFIED(104, "User already verified", HttpStatus.BAD_REQUEST),
     VERIFICATION_CODE_NOT_FOUND(105, "Entered code is invalid", HttpStatus.BAD_REQUEST),
+    USER_NOT_VERIFIED(106, "User not verified", HttpStatus.BAD_REQUEST),
+    USERNAME_EXISTS(107, "Username already taken", HttpStatus.BAD_REQUEST),
 
     DB_ERROR(-99, "Database Error", HttpStatus.BAD_REQUEST);
 
