@@ -2,7 +2,7 @@ package com.back2261.authservice.infrastructure.entity;
 
 import jakarta.persistence.*;
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,7 +28,7 @@ public class User {
 
     private Integer age;
     private String country;
-    private Byte[] avatar;
+    private byte[] avatar;
 
     @CreationTimestamp
     private Date createdDate;
@@ -41,8 +41,21 @@ public class User {
     private Boolean isBlocked = false;
     private Boolean isRegistered = false;
 
-    @ElementCollection
-    private List<String> keyWords;
+    @ManyToMany
+    @JoinTable(
+            name = "gamer_keywords_join",
+            schema = "schauth",
+            joinColumns = @JoinColumn(name = "gamer_id"),
+            inverseJoinColumns = @JoinColumn(name = "keyword_id"))
+    private Set<Keywords> keywords;
 
     private Boolean isVerified = false;
+
+    @ManyToMany
+    @JoinTable(
+            name = "gamer_games_join",
+            schema = "schauth",
+            joinColumns = @JoinColumn(name = "gamer_id"),
+            inverseJoinColumns = @JoinColumn(name = "game_id"))
+    private Set<Games> likedgames;
 }

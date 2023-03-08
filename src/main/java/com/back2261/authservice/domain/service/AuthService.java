@@ -1,5 +1,6 @@
 package com.back2261.authservice.domain.service;
 
+import com.back2261.authservice.interfaces.request.DetailsRequest;
 import com.back2261.authservice.interfaces.request.RegisterRequest;
 import com.back2261.authservice.interfaces.request.UsernameRequest;
 import com.back2261.authservice.interfaces.request.VerifyRequest;
@@ -12,4 +13,6 @@ public interface AuthService {
     DefaultMessageResponse verifyCode(VerifyRequest verifyRequest);
 
     DefaultMessageResponse setUsername(UsernameRequest usernameRequest);
+
+    DefaultMessageResponse details(DetailsRequest detailsRequest);
 }
