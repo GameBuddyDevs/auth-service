@@ -1,6 +1,7 @@
 package com.back2261.authservice.application.controller;
 
 import com.back2261.authservice.domain.service.AuthService;
+import com.back2261.authservice.interfaces.request.DetailsRequest;
 import com.back2261.authservice.interfaces.request.RegisterRequest;
 import com.back2261.authservice.interfaces.request.UsernameRequest;
 import com.back2261.authservice.interfaces.request.VerifyRequest;
@@ -33,5 +34,10 @@ public class AuthController {
     @PostMapping("/username")
     public ResponseEntity<DefaultMessageResponse> setUsername(@Valid @RequestBody UsernameRequest usernameRequest) {
         return new ResponseEntity<>(authService.setUsername(usernameRequest), HttpStatus.OK);
+    }
+
+    @PostMapping("/details")
+    public ResponseEntity<DefaultMessageResponse> details(@Valid @RequestBody DetailsRequest detailsRequest) {
+        return new ResponseEntity<>(authService.details(detailsRequest), HttpStatus.OK);
     }
 }
