@@ -9,7 +9,7 @@ import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
-@Table(name = "verification_code", schema = "schauth")
+@Table(name = "verification_code")
 @Getter
 @Setter
 @AllArgsConstructor

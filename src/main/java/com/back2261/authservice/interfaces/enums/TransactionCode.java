@@ -13,7 +13,10 @@ public enum TransactionCode {
     VERIFICATION_CODE_NOT_FOUND(105, "Entered code is invalid", HttpStatus.BAD_REQUEST),
     USER_NOT_VERIFIED(106, "User not verified", HttpStatus.BAD_REQUEST),
     USERNAME_EXISTS(107, "Username already taken", HttpStatus.BAD_REQUEST),
-
+    WRONG_PASSWORD(108, "Entered password is wrong", HttpStatus.BAD_REQUEST),
+    USER_NOT_COMPLETED(109, "User details not finished", HttpStatus.BAD_REQUEST),
+    TOKEN_INVALID(110, "Token is invalid", HttpStatus.BAD_REQUEST),
+    TOKEN_NOT_FOUND(111, "Token not found", HttpStatus.BAD_REQUEST),
     DB_ERROR(-99, "Database Error", HttpStatus.BAD_REQUEST);
 
     private final int id;

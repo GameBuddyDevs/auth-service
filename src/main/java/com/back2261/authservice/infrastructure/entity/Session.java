@@ -2,10 +2,8 @@ package com.back2261.authservice.infrastructure.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import java.util.Date;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,20 +11,19 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
-@Table(name = "keywords")
+@Table(name = "session")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Keywords {
+public class Session {
     @Id
-    private String id;
+    private String accessToken;
 
-    private String keywordName;
+    private String email;
+    private Date accessExpiredDate;
+    private Boolean isActive;
 
     @CreationTimestamp
     private Date createdDate;
-
-    @ManyToMany(mappedBy = "keywords")
-    private Set<Gamer> gamers;
 }

@@ -2,24 +2,21 @@ package com.back2261.authservice.domain.service;
 
 import com.back2261.authservice.base.BaseBody;
 import com.back2261.authservice.base.Status;
+import com.back2261.authservice.domain.jwt.JwtService;
 import com.back2261.authservice.exception.BusinessException;
-import com.back2261.authservice.infrastructure.entity.Games;
-import com.back2261.authservice.infrastructure.entity.Keywords;
-import com.back2261.authservice.infrastructure.entity.User;
-import com.back2261.authservice.infrastructure.entity.VerificationCode;
-import com.back2261.authservice.infrastructure.repository.GamesRepository;
-import com.back2261.authservice.infrastructure.repository.KeywordsRepository;
-import com.back2261.authservice.infrastructure.repository.UserRepository;
-import com.back2261.authservice.infrastructure.repository.VerificationCodeRepository;
+import com.back2261.authservice.infrastructure.entity.*;
+import com.back2261.authservice.infrastructure.repository.*;
 import com.back2261.authservice.interfaces.dto.DefaultMessageBody;
+import com.back2261.authservice.interfaces.dto.LoginResponseBody;
 import com.back2261.authservice.interfaces.dto.RegisterResponseBody;
+import com.back2261.authservice.interfaces.dto.TokenResponseBody;
+import com.back2261.authservice.interfaces.enums.Role;
 import com.back2261.authservice.interfaces.enums.TransactionCode;
-import com.back2261.authservice.interfaces.request.DetailsRequest;
-import com.back2261.authservice.interfaces.request.RegisterRequest;
-import com.back2261.authservice.interfaces.request.UsernameRequest;
-import com.back2261.authservice.interfaces.request.VerifyRequest;
+import com.back2261.authservice.interfaces.request.*;
 import com.back2261.authservice.interfaces.response.DefaultMessageResponse;
+import com.back2261.authservice.interfaces.response.LoginResponse;
 import com.back2261.authservice.interfaces.response.RegisterResponse;
+import com.back2261.authservice.interfaces.response.TokenResponse;
 import com.back2261.authservice.util.Constants;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
@@ -27,16 +24,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class DefaultAuthService implements AuthService {
-    private final UserRepository userRepository;
+    private final GamerRepository gamerRepository;
     private final VerificationCodeRepository verificationCodeRepository;
     private final GamesRepository gamesRepository;
+    private final SessionRepository sessionRepository;
     private final KeywordsRepository keywordsRepository;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -48,23 +51,89 @@ public class DefaultAuthService implements AuthService {
     private String sender;
 
     @Override
+    public LoginResponse login(LoginRequest loginRequest) {
+        String usernameOrEmail = loginRequest.getUsernameOrEmail();
+        String password = loginRequest.getPassword();
+        Optional<Gamer> gamerOptional;
+        if (usernameOrEmail.contains("@")) {
+            gamerOptional = gamerRepository.findByEmail(usernameOrEmail);
+        } else {
+            gamerOptional = gamerRepository.findByGamerUsername(usernameOrEmail);
+        }
+        if (gamerOptional.isEmpty()) {
+            throw new BusinessException(TransactionCode.USER_NOT_FOUND);
+        }
+        Gamer gamer = gamerOptional.get();
+        String email = gamer.getEmail();
+
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+        } catch (BadCredentialsException e) {
+            throw new BusinessException(TransactionCode.WRONG_PASSWORD);
+        }
+
+        if (!gamer.getIsVerified()) {
+            throw new BusinessException(TransactionCode.USER_NOT_VERIFIED);
+        }
+        if (!gamer.getIsRegistered()) {
+            throw new BusinessException(TransactionCode.USER_NOT_COMPLETED);
+        }
+
+        LoginResponse loginResponse = new LoginResponse();
+        LoginResponseBody body = new LoginResponseBody();
+
+        String token = jwtService.generateToken(gamer);
+        Date expirationDate = jwtService.extractExpiration(token);
+
+        List<Session> foundSessions = sessionRepository.findByEmailAndIsActiveTrue(email);
+        foundSessions.forEach(session -> {
+            session.setIsActive(false);
+            sessionRepository.save(session);
+        });
+
+        Session session = new Session();
+        session.setAccessToken(token);
+        session.setAccessExpiredDate(expirationDate);
+        session.setIsActive(true);
+        session.setEmail(email);
+        sessionRepository.save(session);
+
+        body.setAccessToken(token);
+        body.setAccessTokenExpirationDate(expirationDate);
+        loginResponse.setBody(new BaseBody<>(body));
+        loginResponse.setStatus(new Status(TransactionCode.DEFAULT_100));
+        return loginResponse;
+    }
+
+    @Override
     public RegisterResponse register(RegisterRequest registerRequest) {
         String email = registerRequest.getEmail();
         String password = registerRequest.getPassword();
-        Optional<User> user = userRepository.findByEmail(email);
-        if (user.isPresent()) {
+        Optional<Gamer> gamerOptional = gamerRepository.findByEmail(email);
+        if (gamerOptional.isPresent()) {
             throw new BusinessException(TransactionCode.EMAIL_EXISTS);
         }
-        User newUser = new User();
-        newUser.setUserId(UUID.randomUUID().toString());
-        newUser.setEmail(email);
+        Gamer newGamer = new Gamer();
+        newGamer.setUserId(UUID.randomUUID().toString());
+        newGamer.setEmail(email);
         String encodedPassword = passwordEncoder.encode(password);
-        newUser.setPwd(encodedPassword);
-        userRepository.save(newUser);
+        newGamer.setPwd(encodedPassword);
+        newGamer.setRole(Role.USER);
+        gamerRepository.save(newGamer);
+        String token = jwtService.generateToken(newGamer);
+        Date expirationDate = jwtService.extractExpiration(token);
+        Session session = new Session();
+        session.setAccessToken(token);
+        session.setAccessExpiredDate(expirationDate);
+        session.setIsActive(true);
+        session.setEmail(email);
+        sessionRepository.save(session);
+
         sendVerificationEmail(email);
         RegisterResponse registerResponse = new RegisterResponse();
         RegisterResponseBody registerResponseBody = new RegisterResponseBody();
-        registerResponseBody.setUserId(newUser.getUserId());
+        registerResponseBody.setUserId(newGamer.getUserId());
+        registerResponseBody.setToken(token);
         registerResponse.setBody(new BaseBody<>(registerResponseBody));
         registerResponse.setStatus(new Status(TransactionCode.DEFAULT_100));
         return registerResponse;
@@ -74,15 +143,15 @@ public class DefaultAuthService implements AuthService {
     public DefaultMessageResponse verifyCode(VerifyRequest verifyRequest) {
         String userId = verifyRequest.getUserId();
         Integer code = verifyRequest.getVerificationCode();
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isEmpty()) {
+        Optional<Gamer> gamerOptional = gamerRepository.findById(userId);
+        if (gamerOptional.isEmpty()) {
             throw new BusinessException(TransactionCode.USER_NOT_FOUND);
         }
-        User user = userOptional.get();
-        if (user.getIsVerified()) {
+        Gamer gamer = gamerOptional.get();
+        if (gamer.getIsVerified()) {
             throw new BusinessException(TransactionCode.USER_ALREADY_VERIFIED);
         }
-        String email = user.getEmail();
+        String email = gamer.getEmail();
         Optional<VerificationCode> verificationCodeOptional =
                 verificationCodeRepository.findByEmailAndCodeAndIsValidTrue(email, code);
         if (verificationCodeOptional.isEmpty()) {
@@ -92,8 +161,8 @@ public class DefaultAuthService implements AuthService {
         verificationCode.setIsValid(false);
         verificationCodeRepository.save(verificationCode);
 
-        user.setIsVerified(true);
-        userRepository.save(user);
+        gamer.setIsVerified(true);
+        gamerRepository.save(gamer);
         DefaultMessageResponse verifyResponse = new DefaultMessageResponse();
         DefaultMessageBody body = new DefaultMessageBody("User verified successfully");
         verifyResponse.setBody(new BaseBody<>(body));
@@ -105,19 +174,19 @@ public class DefaultAuthService implements AuthService {
     public DefaultMessageResponse setUsername(UsernameRequest usernameRequest) {
         String username = usernameRequest.getUsername();
         String userId = usernameRequest.getUserId();
-        User user = checkUser(userId);
-        Optional<User> usernameCheckOptional = userRepository.findByUsername(username);
+        Gamer gamer = checkGamer(userId);
+        Optional<Gamer> usernameCheckOptional = gamerRepository.findByGamerUsername(username);
 
         if (usernameCheckOptional.isPresent()) {
-            User usernameCheck = usernameCheckOptional.get();
-            if (!Objects.equals(usernameCheck.getUserId(), user.getUserId())) {
+            Gamer usernameCheck = usernameCheckOptional.get();
+            if (!Objects.equals(usernameCheck.getUserId(), gamer.getUserId())) {
                 throw new BusinessException(TransactionCode.USERNAME_EXISTS);
             }
         }
 
-        if (!Objects.equals(user.getUsername(), username)) {
-            user.setUsername(username);
-            userRepository.save(user);
+        if (!Objects.equals(gamer.getUsername(), username)) {
+            gamer.setGamerUsername(username);
+            gamerRepository.save(gamer);
         }
 
         DefaultMessageResponse verifyResponse = new DefaultMessageResponse();
@@ -127,6 +196,7 @@ public class DefaultAuthService implements AuthService {
         return verifyResponse;
     }
 
+    @Override
     public DefaultMessageResponse details(DetailsRequest detailsRequest) {
         String userId = detailsRequest.getUserId();
         Integer age = detailsRequest.getAge();
@@ -135,20 +205,47 @@ public class DefaultAuthService implements AuthService {
         List<String> keyWords = detailsRequest.getKeywords();
         List<String> favGames = detailsRequest.getFavoriteGames();
 
-        User user = checkUser(userId);
-        user.setAge(age);
-        user.setCountry(country);
-        user.setAvatar(avatar);
-        mapAndSetKeywords(user, keyWords);
-        mapAndSetUserGames(user, favGames);
-        user.setIsRegistered(true);
-        userRepository.save(user);
+        Gamer gamer = checkGamer(userId);
+        gamer.setAge(age);
+        gamer.setCountry(country);
+        gamer.setAvatar(avatar);
+        mapAndSetKeywords(gamer, keyWords);
+        mapAndSetUserGames(gamer, favGames);
+        gamer.setIsRegistered(true);
+        gamerRepository.save(gamer);
 
         DefaultMessageResponse verifyResponse = new DefaultMessageResponse();
         DefaultMessageBody body = new DefaultMessageBody("User details fetched successfully");
         verifyResponse.setBody(new BaseBody<>(body));
         verifyResponse.setStatus(new Status(TransactionCode.DEFAULT_100));
         return verifyResponse;
+    }
+
+    @Override
+    public TokenResponse validateToken(String token) {
+        Optional<Session> sessionOptional = sessionRepository.findByAccessTokenAndIsActiveTrue(token);
+        if (sessionOptional.isEmpty()) {
+            throw new BusinessException(TransactionCode.TOKEN_NOT_FOUND);
+        }
+        Session session = sessionOptional.get();
+        String email = session.getEmail();
+        Optional<Gamer> gamerOptional = gamerRepository.findByEmail(email);
+        if (gamerOptional.isEmpty()) {
+            throw new BusinessException(TransactionCode.USER_NOT_FOUND);
+        }
+        Gamer gamer = gamerOptional.get();
+        Boolean isValid = jwtService.validateToken(token, gamer);
+        if (Boolean.FALSE.equals(isValid)) {
+            throw new BusinessException(TransactionCode.TOKEN_INVALID);
+        }
+
+        TokenResponse tokenResponse = new TokenResponse();
+        TokenResponseBody body = new TokenResponseBody();
+        body.setUsername(gamer.getGamerUsername());
+        body.setIsValid(true);
+        tokenResponse.setBody(new BaseBody<>(body));
+        tokenResponse.setStatus(new Status(TransactionCode.DEFAULT_100));
+        return tokenResponse;
     }
 
     private void sendVerificationEmail(String email) {
@@ -175,34 +272,34 @@ public class DefaultAuthService implements AuthService {
         }
     }
 
-    private User checkUser(String userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
+    private Gamer checkGamer(String userId) {
+        Optional<Gamer> userOptional = gamerRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new BusinessException(TransactionCode.USER_NOT_FOUND);
         }
-        User user = userOptional.get();
-        if (!user.getIsVerified()) {
+        Gamer gamer = userOptional.get();
+        if (!gamer.getIsVerified()) {
             throw new BusinessException(TransactionCode.USER_NOT_VERIFIED);
         }
-        return user;
+        return gamer;
     }
 
-    private void mapAndSetUserGames(User user, List<String> favGames) {
+    private void mapAndSetUserGames(Gamer gamer, List<String> favGames) {
         favGames.forEach(game -> {
             Optional<Games> gameOptional = gamesRepository.findByGameName(game);
             if (gameOptional.isPresent()) {
                 Games game1 = gameOptional.get();
-                user.getLikedgames().add(game1);
+                gamer.getLikedgames().add(game1);
             }
         });
     }
 
-    private void mapAndSetKeywords(User user, List<String> keyWords) {
+    private void mapAndSetKeywords(Gamer gamer, List<String> keyWords) {
         keyWords.forEach(keyword -> {
             Optional<Keywords> keywordOptional = keywordsRepository.findByKeywordName(keyword);
             if (keywordOptional.isPresent()) {
                 Keywords keyword1 = keywordOptional.get();
-                user.getKeywords().add(keyword1);
+                gamer.getKeywords().add(keyword1);
             }
         });
     }
