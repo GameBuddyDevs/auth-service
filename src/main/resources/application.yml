@@ -8,9 +8,12 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-      dialect: org.hibernate.dialect.PostgreSQLDialect
-      format_sql: true
-      default_schema: schauth
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: schauth
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
   mail:
     host: smtp.gmail.com
@@ -23,6 +26,9 @@ spring:
           auth: true
           starttls:
             enable: true
+
+jwt:
+  secret: 4B6250655368566D5970337336763979244226452948404D635166546A576E5A
 
 server:
   port: 4567

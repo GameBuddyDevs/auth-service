@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "games", schema = "schauth")
+@Table(name = "games")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -27,5 +27,5 @@ public class Games {
     private String description;
 
     @ManyToMany(mappedBy = "likedgames")
-    private Set<User> gamers;
+    private Set<Gamer> gamers;
 }

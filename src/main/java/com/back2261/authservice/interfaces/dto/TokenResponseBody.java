@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterResponseBody extends BaseModel {
-    private String userId;
-    private String token;
+public class TokenResponseBody extends BaseModel {
+    private String username;
+    private Boolean isValid;
 }
