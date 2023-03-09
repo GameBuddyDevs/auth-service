@@ -61,6 +61,5 @@ public class AuthController {
             tokenResponse.setBody(new BaseBody<>(body));
             return new ResponseEntity<>(tokenResponse, HttpStatus.UNAUTHORIZED);
         }
-
     }
 }
