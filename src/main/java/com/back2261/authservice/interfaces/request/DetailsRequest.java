@@ -20,6 +20,8 @@ public class DetailsRequest {
     private String country;
 
     private byte[] avatar;
+
+    @Size(max = 1)
     private String gender;
 
     @Size(min = 1)

@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://w1.eren.wtf:5432/gamebuddyDB
+    url: jdbc:postgresql://l2.eren.wtf:5432/gamebuddydb
     username: gamebuddy
     password: 3uT4}dpjK2PUk2#n
     driver-class-name: org.postgresql.Driver

@@ -93,7 +93,7 @@ public class DefaultAuthService implements AuthService {
 
         Session session = new Session();
         session.setAccessToken(token);
-        session.setAccessExpiredDate(expirationDate);
+        session.setTokenExpiredDate(expirationDate);
         session.setIsActive(true);
         session.setEmail(email);
         sessionRepository.save(session);
@@ -124,7 +124,7 @@ public class DefaultAuthService implements AuthService {
         Date expirationDate = jwtService.extractExpiration(token);
         Session session = new Session();
         session.setAccessToken(token);
-        session.setAccessExpiredDate(expirationDate);
+        session.setTokenExpiredDate(expirationDate);
         session.setIsActive(true);
         session.setEmail(email);
         sessionRepository.save(session);
@@ -201,6 +201,7 @@ public class DefaultAuthService implements AuthService {
         String userId = detailsRequest.getUserId();
         Integer age = detailsRequest.getAge();
         String country = detailsRequest.getCountry();
+        String gender = detailsRequest.getGender();
         byte[] avatar = detailsRequest.getAvatar();
         List<String> keyWords = detailsRequest.getKeywords();
         List<String> favGames = detailsRequest.getFavoriteGames();
@@ -209,6 +210,7 @@ public class DefaultAuthService implements AuthService {
         gamer.setAge(age);
         gamer.setCountry(country);
         gamer.setAvatar(avatar);
+        gamer.setGender(gender);
         mapAndSetKeywords(gamer, keyWords);
         mapAndSetUserGames(gamer, favGames);
         gamer.setIsRegistered(true);
