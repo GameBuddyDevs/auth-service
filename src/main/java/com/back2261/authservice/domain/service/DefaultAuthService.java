@@ -184,7 +184,7 @@ public class DefaultAuthService implements AuthService {
             }
         }
 
-        if (!Objects.equals(gamer.getUsername(), username)) {
+        if (!Objects.equals(gamer.getGamerUsername(), username)) {
             gamer.setGamerUsername(username);
             gamerRepository.save(gamer);
         }
