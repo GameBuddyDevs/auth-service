@@ -21,7 +21,7 @@ public class Session {
     private String accessToken;
 
     private String email;
-    private Date accessExpiredDate;
+    private Date tokenExpiredDate;
     private Boolean isActive;
 
     @CreationTimestamp
