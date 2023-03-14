@@ -6,6 +6,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import java.util.Date;
 import java.util.Set;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,7 @@ import org.hibernate.annotations.CreationTimestamp;
 @NoArgsConstructor
 public class Keywords {
     @Id
-    private String id;
+    private UUID id;
 
     private String keywordName;
 
