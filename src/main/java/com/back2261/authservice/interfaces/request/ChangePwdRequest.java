@@ -6,9 +6,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class LoginRequest {
-    private String usernameOrEmail;
+public class ChangePwdRequest {
 
-    @NotBlank(message = "Password field cannot be empty")
+    @NotBlank
+    private String accessToken;
+
+    @NotBlank
     private String password;
 }

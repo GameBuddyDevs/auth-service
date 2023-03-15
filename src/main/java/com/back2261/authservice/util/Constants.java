@@ -8,4 +8,12 @@ public class Constants {
             Here is your verification code: %s
             Have fun!
             """;
+    public static final String EMAIL_SUBJECT_FORGOT_PASSWORD = "Gamebuddy – Password Reset";
+    public static final String EMAIL_TEXT_FORGOT_PASSWORD =
+            """
+            Someone requested that the password be reset for this account.
+            Here is your verification code to continue: %s
+            Your email: %s
+            If you did not request a password reset, please ignore this email.
+            """;
 }
