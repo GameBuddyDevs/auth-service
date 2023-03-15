@@ -8,9 +8,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class VerifyRequest {
-    @NotBlank
-    private String userId;
+    @NotBlank(message = "Email cannot be empty")
+    private String email;
 
-    @NotNull
+    @NotNull(message = "Verification code cannot be empty")
     private Integer verificationCode;
 }

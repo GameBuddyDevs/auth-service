@@ -17,6 +17,7 @@ public enum TransactionCode {
     USER_NOT_COMPLETED(109, "User details not finished", HttpStatus.BAD_REQUEST),
     TOKEN_INVALID(110, "Token is invalid", HttpStatus.BAD_REQUEST),
     TOKEN_NOT_FOUND(111, "Token not found", HttpStatus.BAD_REQUEST),
+    PASSWORD_SAME(112, "New password cannot be same as old password", HttpStatus.BAD_REQUEST),
     DB_ERROR(-99, "Database Error", HttpStatus.BAD_REQUEST);
 
     private final int id;

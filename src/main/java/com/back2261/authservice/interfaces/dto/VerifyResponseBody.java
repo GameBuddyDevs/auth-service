@@ -1,6 +1,7 @@
 package com.back2261.authservice.interfaces.dto;
 
 import com.back2261.authservice.base.BaseModel;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterResponseBody extends BaseModel {
-    private String userId;
+public class VerifyResponseBody extends BaseModel {
+    private String accessToken;
+    private Date accessTokenExpirationDate;
 }
