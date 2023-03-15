@@ -1,21 +1,22 @@
 package com.back2261.authservice.domain.service;
 
 import com.back2261.authservice.interfaces.request.*;
-import com.back2261.authservice.interfaces.response.DefaultMessageResponse;
-import com.back2261.authservice.interfaces.response.LoginResponse;
-import com.back2261.authservice.interfaces.response.RegisterResponse;
-import com.back2261.authservice.interfaces.response.TokenResponse;
+import com.back2261.authservice.interfaces.response.*;
 
 public interface AuthService {
     LoginResponse login(LoginRequest loginRequest);
 
     RegisterResponse register(RegisterRequest registerRequest);
 
-    DefaultMessageResponse verifyCode(VerifyRequest verifyRequest);
+    VerifyResponse verifyCode(VerifyRequest verifyRequest);
+
+    DefaultMessageResponse changePwd(ChangePwdRequest changePwdRequest);
 
     DefaultMessageResponse setUsername(UsernameRequest usernameRequest);
 
     DefaultMessageResponse details(DetailsRequest detailsRequest);
 
     TokenResponse validateToken(String token);
+
+    DefaultMessageResponse sendVerificationEmail(SendCodeRequest sendCodeRequest);
 }

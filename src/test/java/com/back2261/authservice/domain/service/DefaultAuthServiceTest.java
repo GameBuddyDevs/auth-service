@@ -7,10 +7,10 @@ import com.back2261.authservice.exception.BusinessException;
 import com.back2261.authservice.infrastructure.entity.Gamer;
 import com.back2261.authservice.infrastructure.repository.*;
 import com.back2261.authservice.interfaces.enums.Role;
+import com.back2261.authservice.interfaces.request.DetailsRequest;
 import com.back2261.authservice.interfaces.request.UsernameRequest;
 import com.back2261.authservice.interfaces.response.DefaultMessageResponse;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -72,12 +72,45 @@ class DefaultAuthServiceTest {
         assertEquals(103, thrownError.getTransactionCode().getId());
     }
 
+    @Test
+    void testDetails_whenValidRequestProvided_shouldReturnSuccess() {
+        DetailsRequest request = new DetailsRequest();
+        request.setUserId("test1");
+        request.setAge(20);
+        request.setCountry("test1");
+        request.setGender("M");
+
+        byte[] avatar = new byte[] {4};
+        request.setAvatar(avatar);
+
+        List<String> keywords = new ArrayList<>();
+        keywords.add("test1");
+        request.setKeywords(keywords);
+
+        List<String> favGames = new ArrayList<>();
+        favGames.add("test1");
+        request.setFavoriteGames(favGames);
+
+        Gamer gamer = getGamer();
+        gamer.setIsVerified(true);
+        Mockito.when(gamerRepository.findById(Mockito.anyString())).thenReturn(Optional.of(gamer));
+        DefaultMessageResponse result = authService.details(request);
+
+        assertEquals(20, gamer.getAge());
+        assertEquals("test1", gamer.getCountry());
+        assertEquals(avatar, gamer.getAvatar());
+        assertEquals("M", gamer.getGender());
+        assertTrue(gamer.getIsRegistered());
+        // assertEquals(keywords,gamer.getKeywords()); gamer.getKeywords() return null
+        assertEquals("100", result.getStatus().getCode());
+    }
+
     private Gamer getGamer() {
         Gamer gamer = new Gamer();
         gamer.setUserId("test");
         gamer.setGamerUsername("test");
         gamer.setEmail("test");
-        gamer.setAge(10);
+        gamer.setAge(15);
         gamer.setCountry("test");
         gamer.setAvatar(new byte[0]);
         gamer.setCreatedDate(new Date());

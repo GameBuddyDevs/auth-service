@@ -6,17 +6,11 @@ import com.back2261.authservice.domain.jwt.JwtService;
 import com.back2261.authservice.exception.BusinessException;
 import com.back2261.authservice.infrastructure.entity.*;
 import com.back2261.authservice.infrastructure.repository.*;
-import com.back2261.authservice.interfaces.dto.DefaultMessageBody;
-import com.back2261.authservice.interfaces.dto.LoginResponseBody;
-import com.back2261.authservice.interfaces.dto.RegisterResponseBody;
-import com.back2261.authservice.interfaces.dto.TokenResponseBody;
+import com.back2261.authservice.interfaces.dto.*;
 import com.back2261.authservice.interfaces.enums.Role;
 import com.back2261.authservice.interfaces.enums.TransactionCode;
 import com.back2261.authservice.interfaces.request.*;
-import com.back2261.authservice.interfaces.response.DefaultMessageResponse;
-import com.back2261.authservice.interfaces.response.LoginResponse;
-import com.back2261.authservice.interfaces.response.RegisterResponse;
-import com.back2261.authservice.interfaces.response.TokenResponse;
+import com.back2261.authservice.interfaces.response.*;
 import com.back2261.authservice.util.Constants;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
@@ -84,17 +78,11 @@ public class DefaultAuthService implements AuthService {
 
         String token = jwtService.generateToken(gamer);
         Date expirationDate = jwtService.extractExpiration(token);
-
-        List<Session> foundSessions = sessionRepository.findByEmailAndIsActiveTrue(email);
-        foundSessions.forEach(session -> {
-            session.setIsActive(false);
-            sessionRepository.save(session);
-        });
+        deleteOldSessions(email);
 
         Session session = new Session();
         session.setAccessToken(token);
         session.setTokenExpiredDate(expirationDate);
-        session.setIsActive(true);
         session.setEmail(email);
         sessionRepository.save(session);
 
@@ -120,38 +108,42 @@ public class DefaultAuthService implements AuthService {
         newGamer.setPwd(encodedPassword);
         newGamer.setRole(Role.USER);
         gamerRepository.save(newGamer);
-        String token = jwtService.generateToken(newGamer);
-        Date expirationDate = jwtService.extractExpiration(token);
-        Session session = new Session();
-        session.setAccessToken(token);
-        session.setTokenExpiredDate(expirationDate);
-        session.setIsActive(true);
-        session.setEmail(email);
-        sessionRepository.save(session);
 
-        sendVerificationEmail(email);
+        Integer code = new Random().nextInt(900000) + 100000;
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(sender);
+            message.setTo(email);
+            message.setSubject(String.format(Constants.EMAIL_SUBJECT, code));
+            message.setText(String.format(Constants.EMAIL_TEXT, code));
+
+            emailSender.send(message);
+            VerificationCode verificationCode = new VerificationCode();
+            verificationCode.setCode(code);
+            verificationCode.setEmail(email);
+            verificationCode.setIsValid(true);
+            verificationCodeRepository.save(verificationCode);
+        } catch (Exception e) {
+            throw new BusinessException(TransactionCode.EMAIL_SEND_FAILED);
+        }
         RegisterResponse registerResponse = new RegisterResponse();
         RegisterResponseBody registerResponseBody = new RegisterResponseBody();
         registerResponseBody.setUserId(newGamer.getUserId());
-        registerResponseBody.setToken(token);
         registerResponse.setBody(new BaseBody<>(registerResponseBody));
         registerResponse.setStatus(new Status(TransactionCode.DEFAULT_100));
         return registerResponse;
     }
 
     @Override
-    public DefaultMessageResponse verifyCode(VerifyRequest verifyRequest) {
-        String userId = verifyRequest.getUserId();
+    public VerifyResponse verifyCode(VerifyRequest verifyRequest) {
+        String email = verifyRequest.getEmail();
         Integer code = verifyRequest.getVerificationCode();
-        Optional<Gamer> gamerOptional = gamerRepository.findById(userId);
+        Optional<Gamer> gamerOptional = gamerRepository.findByEmail(email);
         if (gamerOptional.isEmpty()) {
             throw new BusinessException(TransactionCode.USER_NOT_FOUND);
         }
         Gamer gamer = gamerOptional.get();
-        if (gamer.getIsVerified()) {
-            throw new BusinessException(TransactionCode.USER_ALREADY_VERIFIED);
-        }
-        String email = gamer.getEmail();
+
         Optional<VerificationCode> verificationCodeOptional =
                 verificationCodeRepository.findByEmailAndCodeAndIsValidTrue(email, code);
         if (verificationCodeOptional.isEmpty()) {
@@ -160,14 +152,49 @@ public class DefaultAuthService implements AuthService {
         VerificationCode verificationCode = verificationCodeOptional.get();
         verificationCode.setIsValid(false);
         verificationCodeRepository.save(verificationCode);
-
         gamer.setIsVerified(true);
         gamerRepository.save(gamer);
-        DefaultMessageResponse verifyResponse = new DefaultMessageResponse();
-        DefaultMessageBody body = new DefaultMessageBody("User verified successfully");
+
+        deleteOldSessions(email);
+        String token = jwtService.generateToken(gamer);
+        Date expirationDate = jwtService.extractExpiration(token);
+        Session session = new Session();
+        session.setAccessToken(token);
+        session.setTokenExpiredDate(expirationDate);
+        session.setEmail(email);
+        sessionRepository.save(session);
+
+        VerifyResponse verifyResponse = new VerifyResponse();
+        VerifyResponseBody body = new VerifyResponseBody();
+        body.setAccessToken(token);
+        body.setAccessTokenExpirationDate(expirationDate);
         verifyResponse.setBody(new BaseBody<>(body));
         verifyResponse.setStatus(new Status(TransactionCode.DEFAULT_100));
         return verifyResponse;
+    }
+
+    @Override
+    public DefaultMessageResponse changePwd(ChangePwdRequest changePwdRequest) {
+        String accessToken = changePwdRequest.getAccessToken();
+        String password = changePwdRequest.getPassword();
+        String email = jwtService.extractUsername(accessToken);
+
+        Optional<Gamer> gamerOptional = gamerRepository.findByEmail(email);
+        if (gamerOptional.isEmpty()) {
+            throw new BusinessException(TransactionCode.USER_NOT_FOUND);
+        }
+        Gamer gamer = gamerOptional.get();
+        if (passwordEncoder.matches(password, gamer.getPwd())) {
+            throw new BusinessException(TransactionCode.PASSWORD_SAME);
+        }
+        String encodedPassword = passwordEncoder.encode(password);
+        gamer.setPwd(encodedPassword);
+        gamerRepository.save(gamer);
+        DefaultMessageResponse response = new DefaultMessageResponse();
+        DefaultMessageBody body = new DefaultMessageBody("Password changed successfully.");
+        response.setBody(new BaseBody<>(body));
+        response.setStatus(new Status(TransactionCode.DEFAULT_100));
+        return response;
     }
 
     @Override
@@ -225,7 +252,7 @@ public class DefaultAuthService implements AuthService {
 
     @Override
     public TokenResponse validateToken(String token) {
-        Optional<Session> sessionOptional = sessionRepository.findByAccessTokenAndIsActiveTrue(token);
+        Optional<Session> sessionOptional = sessionRepository.findById(token);
         if (sessionOptional.isEmpty()) {
             throw new BusinessException(TransactionCode.TOKEN_NOT_FOUND);
         }
@@ -250,7 +277,13 @@ public class DefaultAuthService implements AuthService {
         return tokenResponse;
     }
 
-    private void sendVerificationEmail(String email) {
+    @Override
+    public DefaultMessageResponse sendVerificationEmail(SendCodeRequest sendCodeRequest) {
+        String email = sendCodeRequest.getEmail();
+        Optional<Gamer> gamerOptional = gamerRepository.findByEmail(email);
+        if (gamerOptional.isEmpty()) {
+            throw new BusinessException(TransactionCode.USER_NOT_FOUND);
+        }
         List<VerificationCode> verificationCodes = verificationCodeRepository.findAllByEmail(email);
         if (verificationCodes.size() > 0) {
             verificationCodes.forEach(verificationCode -> verificationCode.setIsValid(false));
@@ -261,8 +294,13 @@ public class DefaultAuthService implements AuthService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(sender);
             message.setTo(email);
-            message.setSubject(String.format(Constants.EMAIL_SUBJECT, code));
-            message.setText(String.format(Constants.EMAIL_TEXT, code));
+            if (sendCodeRequest.getIsRegister()) {
+                message.setSubject(String.format(Constants.EMAIL_SUBJECT, code));
+                message.setText(String.format(Constants.EMAIL_TEXT, code));
+            } else {
+                message.setSubject(Constants.EMAIL_SUBJECT_FORGOT_PASSWORD);
+                message.setText(String.format(Constants.EMAIL_TEXT_FORGOT_PASSWORD, code, email));
+            }
             emailSender.send(message);
             VerificationCode verificationCode = new VerificationCode();
             verificationCode.setCode(code);
@@ -272,6 +310,11 @@ public class DefaultAuthService implements AuthService {
         } catch (Exception e) {
             throw new BusinessException(TransactionCode.EMAIL_SEND_FAILED);
         }
+        DefaultMessageResponse response = new DefaultMessageResponse();
+        DefaultMessageBody body = new DefaultMessageBody("Verification code sent successfully");
+        response.setBody(new BaseBody<>(body));
+        response.setStatus(new Status(TransactionCode.DEFAULT_100));
+        return response;
     }
 
     private Gamer checkGamer(String userId) {
@@ -304,5 +347,10 @@ public class DefaultAuthService implements AuthService {
                 gamer.getKeywords().add(keyword1);
             }
         });
+    }
+
+    private void deleteOldSessions(String email) {
+        List<Session> foundSessions = sessionRepository.findAllByEmail(email);
+        sessionRepository.deleteAll(foundSessions);
     }
 }

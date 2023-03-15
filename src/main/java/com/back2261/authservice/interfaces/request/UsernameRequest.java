@@ -7,9 +7,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UsernameRequest {
-    @NotBlank
+    @NotBlank(message = "User ID cannot be empty")
     private String userId;
 
-    @NotBlank
+    @NotBlank(message = "Username cannot be empty")
     private String username;
 }

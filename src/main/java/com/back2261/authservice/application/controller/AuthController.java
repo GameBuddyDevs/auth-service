@@ -5,10 +5,7 @@ import com.back2261.authservice.domain.service.AuthService;
 import com.back2261.authservice.exception.BusinessException;
 import com.back2261.authservice.interfaces.dto.TokenResponseBody;
 import com.back2261.authservice.interfaces.request.*;
-import com.back2261.authservice.interfaces.response.DefaultMessageResponse;
-import com.back2261.authservice.interfaces.response.LoginResponse;
-import com.back2261.authservice.interfaces.response.RegisterResponse;
-import com.back2261.authservice.interfaces.response.TokenResponse;
+import com.back2261.authservice.interfaces.response.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +30,7 @@ public class AuthController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<DefaultMessageResponse> verifyCode(@Valid @RequestBody VerifyRequest registerRequest) {
+    public ResponseEntity<VerifyResponse> verifyCode(@Valid @RequestBody VerifyRequest registerRequest) {
         return new ResponseEntity<>(authService.verifyCode(registerRequest), HttpStatus.OK);
     }
 
@@ -61,5 +58,15 @@ public class AuthController {
             tokenResponse.setBody(new BaseBody<>(body));
             return new ResponseEntity<>(tokenResponse, HttpStatus.UNAUTHORIZED);
         }
+    }
+
+    @PostMapping("/sendCode")
+    public ResponseEntity<DefaultMessageResponse> sendCode(@Valid @RequestBody SendCodeRequest sendCodeRequest) {
+        return new ResponseEntity<>(authService.sendVerificationEmail(sendCodeRequest), HttpStatus.OK);
+    }
+
+    @PutMapping("/change/pwd")
+    public ResponseEntity<DefaultMessageResponse> changePwd(@Valid @RequestBody ChangePwdRequest changePwdRequest) {
+        return new ResponseEntity<>(authService.changePwd(changePwdRequest), HttpStatus.OK);
     }
 }

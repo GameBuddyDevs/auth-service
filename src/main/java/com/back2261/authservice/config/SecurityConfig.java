@@ -23,7 +23,13 @@ public class SecurityConfig {
         return http.csrf()
                 .disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/auth/login", "/auth/register", "/auth/validateToken")
+                .requestMatchers(
+                        "/auth/login",
+                        "/auth/register",
+                        "/auth/validateToken",
+                        "/auth/sendCode",
+                        "/auth/verify",
+                        "/auth/change/pwd")
                 .permitAll()
                 .anyRequest()
                 .authenticated()

@@ -22,7 +22,6 @@ public class Session {
 
     private String email;
     private Date tokenExpiredDate;
-    private Boolean isActive;
 
     @CreationTimestamp
     private Date createdDate;

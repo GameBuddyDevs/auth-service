@@ -10,13 +10,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DetailsRequest {
-    @NotBlank
+    @NotBlank(message = "User ID field cannot be empty")
     private String userId;
 
-    @NotNull
+    @NotNull(message = "Age field cannot be empty")
     private Integer age;
 
-    @NotBlank
+    @NotBlank(message = "Country field cannot be empty")
     private String country;
 
     private byte[] avatar;
