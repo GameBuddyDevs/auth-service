@@ -5,12 +5,15 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.back2261.authservice.domain.jwt.JwtService;
 import com.back2261.authservice.exception.BusinessException;
 import com.back2261.authservice.infrastructure.entity.Gamer;
+import com.back2261.authservice.infrastructure.entity.Games;
+import com.back2261.authservice.infrastructure.entity.Keywords;
 import com.back2261.authservice.infrastructure.repository.*;
 import com.back2261.authservice.interfaces.enums.Role;
 import com.back2261.authservice.interfaces.request.DetailsRequest;
 import com.back2261.authservice.interfaces.request.UsernameRequest;
 import com.back2261.authservice.interfaces.response.DefaultMessageResponse;
 import java.util.*;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,16 +87,24 @@ class DefaultAuthServiceTest {
         request.setAvatar(avatar);
 
         List<String> keywords = new ArrayList<>();
-        keywords.add("test1");
+        keywords.add("test");
         request.setKeywords(keywords);
 
         List<String> favGames = new ArrayList<>();
-        favGames.add("test1");
+        favGames.add("test");
         request.setFavoriteGames(favGames);
 
         Gamer gamer = getGamer();
         gamer.setIsVerified(true);
+
+        Keywords keyword = getKeywords();
+
+        Games games = getGames();
+
         Mockito.when(gamerRepository.findById(Mockito.anyString())).thenReturn(Optional.of(gamer));
+        Mockito.when(keywordsRepository.findByKeywordName(Mockito.anyString())).thenReturn(Optional.of(keyword));
+        Mockito.when(gamesRepository.findByGameName(Mockito.anyString())).thenReturn(Optional.of(games));
+
         DefaultMessageResponse result = authService.details(request);
 
         assertEquals(20, gamer.getAge());
@@ -101,8 +112,30 @@ class DefaultAuthServiceTest {
         assertEquals(avatar, gamer.getAvatar());
         assertEquals("M", gamer.getGender());
         assertTrue(gamer.getIsRegistered());
-        // assertEquals(keywords,gamer.getKeywords()); gamer.getKeywords() return null
+        assertEquals(
+                favGames, gamer.getLikedgames().stream().map(Games::getGameName).collect(Collectors.toList()));
+        assertEquals(
+                keywords,
+                gamer.getKeywords().stream().map(Keywords::getKeywordName).collect(Collectors.toList()));
         assertEquals("100", result.getStatus().getCode());
+    }
+
+    private Games getGames() {
+        Games games = new Games();
+        games.setGameId("test");
+        games.setGameName("test");
+        games.setGameIcon(new byte[0]);
+        games.setCategory("test");
+        games.setDescription("test");
+        games.setAvgVote(1.00F);
+        return games;
+    }
+
+    private Keywords getKeywords() {
+        Keywords keywords = new Keywords();
+        keywords.setId(new UUID(1, 0));
+        keywords.setKeywordName("test");
+        return keywords;
     }
 
     private Gamer getGamer() {
@@ -121,6 +154,8 @@ class DefaultAuthServiceTest {
         gamer.setIsRegistered(false);
         gamer.setRole(Role.USER);
         gamer.setIsVerified(false);
+        gamer.setLikedgames(new HashSet<>());
+        gamer.setKeywords(new HashSet<>());
         return gamer;
     }
 }
