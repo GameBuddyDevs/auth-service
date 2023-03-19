@@ -62,7 +62,6 @@ public class Gamer implements UserDetails {
     @ManyToMany
     @JoinTable(
             name = "gamer_games_join",
-            schema = "schauth",
             joinColumns = @JoinColumn(name = "gamer_id"),
             inverseJoinColumns = @JoinColumn(name = "game_id"))
     private Set<Games> likedgames;
