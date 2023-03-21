@@ -30,5 +30,11 @@ spring:
 jwt:
   secret: 4B6250655368566D5970337336763979244226452948404D635166546A576E5A
 
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+  api-docs:
+    path: /api-docs
+
 server:
   port: 4567
