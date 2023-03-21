@@ -167,7 +167,7 @@ public class DefaultAuthService implements AuthService {
         VerifyResponse verifyResponse = new VerifyResponse();
         VerifyResponseBody body = new VerifyResponseBody();
         body.setAccessToken(token);
-        body.setAccessTokenExpirationDate(expirationDate);
+        body.setUserId(gamer.getUserId());
         verifyResponse.setBody(new BaseBody<>(body));
         verifyResponse.setStatus(new Status(TransactionCode.DEFAULT_100));
         return verifyResponse;
@@ -265,6 +265,7 @@ public class DefaultAuthService implements AuthService {
         Gamer gamer = gamerOptional.get();
         Boolean isValid = jwtService.validateToken(token, gamer);
         if (Boolean.FALSE.equals(isValid)) {
+            sessionRepository.delete(session);
             throw new BusinessException(TransactionCode.TOKEN_INVALID);
         }
 
