@@ -10,11 +10,11 @@ public interface AuthService {
 
     VerifyResponse verifyCode(VerifyRequest verifyRequest);
 
-    DefaultMessageResponse changePwd(ChangePwdRequest changePwdRequest);
+    DefaultMessageResponse changePwd(String token, ChangePwdRequest changePwdRequest);
 
-    DefaultMessageResponse setUsername(UsernameRequest usernameRequest);
+    DefaultMessageResponse setUsername(String token, UsernameRequest usernameRequest);
 
-    DefaultMessageResponse details(DetailsRequest detailsRequest);
+    DefaultMessageResponse details(String token, DetailsRequest detailsRequest);
 
     TokenResponse validateToken(String token);
 

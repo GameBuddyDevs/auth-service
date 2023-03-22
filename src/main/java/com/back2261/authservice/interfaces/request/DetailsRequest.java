@@ -10,9 +10,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DetailsRequest {
-    @NotBlank(message = "User ID field cannot be empty")
-    private String userId;
-
     @NotNull(message = "Age field cannot be empty")
     private Integer age;
 

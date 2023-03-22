@@ -1,9 +1,6 @@
 package com.back2261.authservice.application.controller;
 
-import com.back2261.authservice.base.BaseBody;
 import com.back2261.authservice.domain.service.AuthService;
-import com.back2261.authservice.exception.BusinessException;
-import com.back2261.authservice.interfaces.dto.TokenResponseBody;
 import com.back2261.authservice.interfaces.request.*;
 import com.back2261.authservice.interfaces.response.*;
 import jakarta.validation.Valid;
@@ -18,6 +15,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+
+    private static final String AUTHORIZATION = "Authorization";
+    private static final String AUTH_MESSAGE = "Authorization field cannot be empty";
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
@@ -35,29 +35,23 @@ public class AuthController {
     }
 
     @PostMapping("/username")
-    public ResponseEntity<DefaultMessageResponse> setUsername(@Valid @RequestBody UsernameRequest usernameRequest) {
-        return new ResponseEntity<>(authService.setUsername(usernameRequest), HttpStatus.OK);
+    public ResponseEntity<DefaultMessageResponse> setUsername(
+            @Valid @RequestHeader(AUTHORIZATION) @NotBlank(message = AUTH_MESSAGE) String token,
+            @Valid @RequestBody UsernameRequest usernameRequest) {
+        return new ResponseEntity<>(authService.setUsername(token.substring(7), usernameRequest), HttpStatus.OK);
     }
 
     @PostMapping("/details")
-    public ResponseEntity<DefaultMessageResponse> details(@Valid @RequestBody DetailsRequest detailsRequest) {
-        return new ResponseEntity<>(authService.details(detailsRequest), HttpStatus.OK);
+    public ResponseEntity<DefaultMessageResponse> details(
+            @Valid @RequestHeader(AUTHORIZATION) @NotBlank(message = AUTH_MESSAGE) String token,
+            @Valid @RequestBody DetailsRequest detailsRequest) {
+        return new ResponseEntity<>(authService.details(token.substring(7), detailsRequest), HttpStatus.OK);
     }
 
     @PostMapping("/validateToken")
     public ResponseEntity<TokenResponse> validateToken(
-            @Valid @RequestHeader("Authorization") @NotBlank(message = "Authorization field cannot be empty")
-                    String token) {
-        try {
-            return new ResponseEntity<>(authService.validateToken(token), HttpStatus.OK);
-        } catch (BusinessException e) {
-            TokenResponse tokenResponse = new TokenResponse();
-            TokenResponseBody body = new TokenResponseBody();
-            body.setIsValid(false);
-            body.setUsername(e.getMessage());
-            tokenResponse.setBody(new BaseBody<>(body));
-            return new ResponseEntity<>(tokenResponse, HttpStatus.UNAUTHORIZED);
-        }
+            @Valid @RequestHeader("Authorization") @NotBlank(message = AUTH_MESSAGE) String token) {
+        return new ResponseEntity<>(authService.validateToken(token.substring(7)), HttpStatus.OK);
     }
 
     @PostMapping("/sendCode")
@@ -66,7 +60,9 @@ public class AuthController {
     }
 
     @PutMapping("/change/pwd")
-    public ResponseEntity<DefaultMessageResponse> changePwd(@Valid @RequestBody ChangePwdRequest changePwdRequest) {
-        return new ResponseEntity<>(authService.changePwd(changePwdRequest), HttpStatus.OK);
+    public ResponseEntity<DefaultMessageResponse> changePwd(
+            @Valid @RequestHeader(AUTHORIZATION) @NotBlank(message = AUTH_MESSAGE) String token,
+            @Valid @RequestBody ChangePwdRequest changePwdRequest) {
+        return new ResponseEntity<>(authService.changePwd(token.substring(7), changePwdRequest), HttpStatus.OK);
     }
 }

@@ -7,10 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ChangePwdRequest {
-
-    @NotBlank
-    private String accessToken;
-
     @NotBlank
     private String password;
 }

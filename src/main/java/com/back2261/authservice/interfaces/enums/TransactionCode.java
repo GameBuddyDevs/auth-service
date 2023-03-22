@@ -18,6 +18,7 @@ public enum TransactionCode {
     TOKEN_INVALID(110, "Token is invalid", HttpStatus.OK),
     TOKEN_NOT_FOUND(111, "Token not found", HttpStatus.OK),
     PASSWORD_SAME(112, "New password cannot be same as old password", HttpStatus.OK),
+    USER_BLOCKED(113, "User is blocked", HttpStatus.OK),
     DB_ERROR(-99, "Database Error", HttpStatus.OK);
 
     private final int id;

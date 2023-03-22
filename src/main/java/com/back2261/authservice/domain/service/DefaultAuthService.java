@@ -14,7 +14,6 @@ import com.back2261.authservice.interfaces.response.*;
 import com.back2261.authservice.util.Constants;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -34,12 +33,8 @@ public class DefaultAuthService implements AuthService {
     private final KeywordsRepository keywordsRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JavaMailSender emailSender;
+    private final PasswordEncoder passwordEncoder;
+    private final JavaMailSender emailSender;
 
     @Value("${spring.mail.username}")
     private String sender;
@@ -66,6 +61,9 @@ public class DefaultAuthService implements AuthService {
             throw new BusinessException(TransactionCode.WRONG_PASSWORD);
         }
 
+        if (gamer.getIsBlocked()) {
+            throw new BusinessException(TransactionCode.USER_BLOCKED);
+        }
         if (!gamer.getIsVerified()) {
             throw new BusinessException(TransactionCode.USER_NOT_VERIFIED);
         }
@@ -174,10 +172,9 @@ public class DefaultAuthService implements AuthService {
     }
 
     @Override
-    public DefaultMessageResponse changePwd(ChangePwdRequest changePwdRequest) {
-        String accessToken = changePwdRequest.getAccessToken();
+    public DefaultMessageResponse changePwd(String token, ChangePwdRequest changePwdRequest) {
         String password = changePwdRequest.getPassword();
-        String email = jwtService.extractUsername(accessToken);
+        String email = jwtService.extractUsername(token);
 
         Optional<Gamer> gamerOptional = gamerRepository.findByEmail(email);
         if (gamerOptional.isEmpty()) {
@@ -198,10 +195,10 @@ public class DefaultAuthService implements AuthService {
     }
 
     @Override
-    public DefaultMessageResponse setUsername(UsernameRequest usernameRequest) {
+    public DefaultMessageResponse setUsername(String token, UsernameRequest usernameRequest) {
         String username = usernameRequest.getUsername();
-        String userId = usernameRequest.getUserId();
-        Gamer gamer = checkGamer(userId);
+        String email = jwtService.extractUsername(token);
+        Gamer gamer = checkGamer(email);
         Optional<Gamer> usernameCheckOptional = gamerRepository.findByGamerUsername(username);
 
         if (usernameCheckOptional.isPresent()) {
@@ -224,8 +221,7 @@ public class DefaultAuthService implements AuthService {
     }
 
     @Override
-    public DefaultMessageResponse details(DetailsRequest detailsRequest) {
-        String userId = detailsRequest.getUserId();
+    public DefaultMessageResponse details(String token, DetailsRequest detailsRequest) {
         Integer age = detailsRequest.getAge();
         String country = detailsRequest.getCountry();
         String gender = detailsRequest.getGender();
@@ -233,7 +229,9 @@ public class DefaultAuthService implements AuthService {
         List<String> keyWords = detailsRequest.getKeywords();
         List<String> favGames = detailsRequest.getFavoriteGames();
 
-        Gamer gamer = checkGamer(userId);
+        String email = jwtService.extractUsername(token);
+        Gamer gamer = checkGamer(email);
+
         gamer.setAge(age);
         gamer.setCountry(country);
         gamer.setAvatar(avatar);
@@ -318,8 +316,8 @@ public class DefaultAuthService implements AuthService {
         return response;
     }
 
-    private Gamer checkGamer(String userId) {
-        Optional<Gamer> userOptional = gamerRepository.findById(userId);
+    private Gamer checkGamer(String email) {
+        Optional<Gamer> userOptional = gamerRepository.findByEmail(email);
         if (userOptional.isEmpty()) {
             throw new BusinessException(TransactionCode.USER_NOT_FOUND);
         }
