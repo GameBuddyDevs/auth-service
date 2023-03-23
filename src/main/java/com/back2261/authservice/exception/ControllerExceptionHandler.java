@@ -1,7 +1,7 @@
 package com.back2261.authservice.exception;
 
-import com.back2261.authservice.base.Status;
-import com.back2261.authservice.interfaces.response.DefaultMessageResponse;
+import io.github.GameBuddyDevs.backendlibrary.base.Status;
+import io.github.GameBuddyDevs.backendlibrary.interfaces.DefaultMessageResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;

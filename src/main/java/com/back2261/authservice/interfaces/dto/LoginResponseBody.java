@@ -1,7 +1,6 @@
 package com.back2261.authservice.interfaces.dto;
 
-import com.back2261.authservice.base.BaseModel;
-import java.util.Date;
+import io.github.GameBuddyDevs.backendlibrary.base.BaseModel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,5 +12,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class LoginResponseBody extends BaseModel {
     private String accessToken;
-    private Date accessTokenExpirationDate;
+    private String userId;
 }

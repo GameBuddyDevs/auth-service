@@ -3,13 +3,14 @@ package com.back2261.authservice.domain.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 
-import com.back2261.authservice.domain.jwt.JwtService;
 import com.back2261.authservice.exception.BusinessException;
 import com.back2261.authservice.infrastructure.entity.*;
 import com.back2261.authservice.infrastructure.repository.*;
-import com.back2261.authservice.interfaces.enums.Role;
 import com.back2261.authservice.interfaces.request.*;
 import com.back2261.authservice.interfaces.response.*;
+import io.github.GameBuddyDevs.backendlibrary.enums.Role;
+import io.github.GameBuddyDevs.backendlibrary.interfaces.DefaultMessageResponse;
+import io.github.GameBuddyDevs.backendlibrary.service.JwtService;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

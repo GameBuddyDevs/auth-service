@@ -1,17 +1,19 @@
 package com.back2261.authservice.domain.service;
 
-import com.back2261.authservice.base.BaseBody;
-import com.back2261.authservice.base.Status;
-import com.back2261.authservice.domain.jwt.JwtService;
 import com.back2261.authservice.exception.BusinessException;
 import com.back2261.authservice.infrastructure.entity.*;
 import com.back2261.authservice.infrastructure.repository.*;
 import com.back2261.authservice.interfaces.dto.*;
-import com.back2261.authservice.interfaces.enums.Role;
-import com.back2261.authservice.interfaces.enums.TransactionCode;
 import com.back2261.authservice.interfaces.request.*;
 import com.back2261.authservice.interfaces.response.*;
 import com.back2261.authservice.util.Constants;
+import io.github.GameBuddyDevs.backendlibrary.base.BaseBody;
+import io.github.GameBuddyDevs.backendlibrary.base.Status;
+import io.github.GameBuddyDevs.backendlibrary.enums.Role;
+import io.github.GameBuddyDevs.backendlibrary.enums.TransactionCode;
+import io.github.GameBuddyDevs.backendlibrary.interfaces.DefaultMessageBody;
+import io.github.GameBuddyDevs.backendlibrary.interfaces.DefaultMessageResponse;
+import io.github.GameBuddyDevs.backendlibrary.service.JwtService;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -85,7 +87,7 @@ public class DefaultAuthService implements AuthService {
         sessionRepository.save(session);
 
         body.setAccessToken(token);
-        body.setAccessTokenExpirationDate(expirationDate);
+        body.setUserId(gamer.getUserId());
         loginResponse.setBody(new BaseBody<>(body));
         loginResponse.setStatus(new Status(TransactionCode.DEFAULT_100));
         return loginResponse;

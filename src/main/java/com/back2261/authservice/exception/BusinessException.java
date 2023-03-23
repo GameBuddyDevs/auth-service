@@ -1,6 +1,6 @@
 package com.back2261.authservice.exception;
 
-import com.back2261.authservice.interfaces.enums.TransactionCode;
+import io.github.GameBuddyDevs.backendlibrary.enums.TransactionCode;
 import lombok.Getter;
 
 @Getter

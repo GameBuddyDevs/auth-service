@@ -2,6 +2,7 @@ package com.back2261.authservice.domain.service;
 
 import com.back2261.authservice.interfaces.request.*;
 import com.back2261.authservice.interfaces.response.*;
+import io.github.GameBuddyDevs.backendlibrary.interfaces.DefaultMessageResponse;
 
 public interface AuthService {
     LoginResponse login(LoginRequest loginRequest);

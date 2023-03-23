@@ -1,6 +1,6 @@
 package com.back2261.authservice.infrastructure.entity;
 
-import com.back2261.authservice.interfaces.enums.Role;
+import io.github.GameBuddyDevs.backendlibrary.enums.Role;
 import jakarta.persistence.*;
 import java.util.Collection;
 import java.util.Date;

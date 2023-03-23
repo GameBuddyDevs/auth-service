@@ -1,6 +1,6 @@
 package com.back2261.authservice.config;
 
-import com.back2261.authservice.domain.jwt.JwtService;
+import io.github.GameBuddyDevs.backendlibrary.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

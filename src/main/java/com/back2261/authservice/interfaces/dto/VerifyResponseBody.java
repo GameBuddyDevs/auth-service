@@ -1,6 +1,6 @@
 package com.back2261.authservice.interfaces.dto;
 
-import com.back2261.authservice.base.BaseModel;
+import io.github.GameBuddyDevs.backendlibrary.base.BaseModel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
