@@ -66,4 +66,9 @@ public class AuthController {
             @Valid @RequestBody ChangePwdRequest changePwdRequest) {
         return new ResponseEntity<>(authService.changePwd(token.substring(7), changePwdRequest), HttpStatus.OK);
     }
+
+    @GetMapping("/setAllUser")
+    public void setAllUser() {
+        authService.setAllUser();
+    }
 }

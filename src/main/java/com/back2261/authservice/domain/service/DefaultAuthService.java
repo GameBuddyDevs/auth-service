@@ -251,6 +251,32 @@ public class DefaultAuthService implements AuthService {
     }
 
     @Override
+    public void setAllUser() {
+        List<Gamer> gamers = gamerRepository.findAll();
+        List<Keywords> allKeywords = keywordsRepository.findAll();
+        List<String> allKeywordsName =
+                allKeywords.stream().map(Keywords::getKeywordName).toList();
+        List<Games> allGames = gamesRepository.findAll();
+        List<String> allGamesName = allGames.stream().map(Games::getGameName).toList();
+        for (Gamer gamer : gamers) {
+            if (gamer.getPwd() == null) {
+                List<String> keyWords = pickNRandom(allKeywordsName, new Random().nextInt(11) + 5);
+                List<String> favGames = pickNRandom(allGamesName, new Random().nextInt(8) + 3);
+                mapAndSetKeywords(gamer, keyWords);
+                mapAndSetUserGames(gamer, favGames);
+                gamer.setRole(Role.USER);
+                gamerRepository.save(gamer);
+            }
+        }
+    }
+
+    public static List<String> pickNRandom(List<String> lst, int n) {
+        List<String> copy = new ArrayList<>(lst);
+        Collections.shuffle(copy);
+        return n > copy.size() ? copy.subList(0, copy.size()) : copy.subList(0, n);
+    }
+
+    @Override
     public TokenResponse validateToken(String token) {
         Optional<Session> sessionOptional = sessionRepository.findById(token);
         if (sessionOptional.isEmpty()) {

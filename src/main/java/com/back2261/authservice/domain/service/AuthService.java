@@ -20,4 +20,6 @@ public interface AuthService {
     TokenResponse validateToken(String token);
 
     DefaultMessageResponse sendVerificationEmail(SendCodeRequest sendCodeRequest);
+
+    void setAllUser();
 }
