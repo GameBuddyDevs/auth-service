@@ -15,6 +15,7 @@ import io.github.GameBuddyDevs.backendlibrary.interfaces.DefaultMessageBody;
 import io.github.GameBuddyDevs.backendlibrary.interfaces.DefaultMessageResponse;
 import io.github.GameBuddyDevs.backendlibrary.service.JwtService;
 import java.util.*;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -316,6 +317,24 @@ public class DefaultAuthService implements AuthService {
         response.setBody(new BaseBody<>(body));
         response.setStatus(new Status(TransactionCode.DEFAULT_100));
         return response;
+    }
+
+    @Override
+    public void updateMatchHistory() {
+        List<Gamer> gamers = gamerRepository.findAll();
+        List<String> gamersids = new ArrayList<>(gamers.stream().map(Gamer::getUserId).toList());
+        Random random = new Random();
+
+        gamers.forEach(gamer -> {
+            Collections.shuffle(gamersids);
+            gamersids.remove(gamer.getUserId());
+            List<String> matchIds = gamersids.stream().limit(random.nextInt(46) + 5).toList();
+            gamersids.add(gamer.getUserId());
+            List<Gamer> matchedGamers = gamers.stream().filter(g -> matchIds.contains(g.getUserId())).toList();
+            gamer.getMatchedHistory().addAll(matchedGamers);
+
+            gamerRepository.save(gamer);
+        });
     }
 
     private Gamer checkGamer(String email) {
