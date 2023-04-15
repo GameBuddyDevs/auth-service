@@ -8,6 +8,9 @@ import com.back2261.authservice.infrastructure.entity.*;
 import com.back2261.authservice.infrastructure.repository.*;
 import com.back2261.authservice.interfaces.request.*;
 import com.back2261.authservice.interfaces.response.*;
+import feign.FeignException;
+import feign.Request;
+import feign.RequestTemplate;
 import io.github.GameBuddyDevs.backendlibrary.enums.Role;
 import io.github.GameBuddyDevs.backendlibrary.interfaces.DefaultMessageResponse;
 import io.github.GameBuddyDevs.backendlibrary.service.JwtService;
@@ -65,6 +68,9 @@ class DefaultAuthServiceTest {
 
     @Mock
     private JavaMailSender emailSender;
+
+    @Mock
+    private UpdateDataFeignService updateDataFeignService;
 
     private String token;
 
@@ -415,6 +421,29 @@ class DefaultAuthServiceTest {
     }
 
     @Test
+    void testDetails_whenFeignServiceErrorOccur_ReturnError123() {
+        DetailsRequest detailsRequest = getDetailsRequest();
+        Gamer gamer = getGamer();
+        Avatars avatar = new Avatars();
+        avatar.setId(UUID.randomUUID());
+        avatar.setImage("test");
+        avatar.setIsSpecial(false);
+        Request request = Request.create(Request.HttpMethod.GET, "url", new HashMap<>(), null, new RequestTemplate());
+        Mockito.when(jwtService.extractUsername(anyString())).thenReturn("test");
+        Mockito.when(gamerRepository.findByEmail(anyString())).thenReturn(Optional.of(gamer));
+        Mockito.when(avatarsRepository.findById(any(UUID.class))).thenReturn(Optional.of(avatar));
+        Mockito.when(keywordsRepository.findByKeywordName(anyString())).thenReturn(Optional.of(getKeyword()));
+        Mockito.when(gamesRepository.findByGameName(anyString())).thenReturn(Optional.of(getGames()));
+        Mockito.doThrow(new FeignException.BadRequest("test", request, null, null))
+                .when(updateDataFeignService)
+                .updateData();
+
+        BusinessException exception =
+                assertThrows(BusinessException.class, () -> authService.details(token, detailsRequest));
+        assertEquals(123, exception.getTransactionCode().getId());
+    }
+
+    @Test
     void testDetails_whenValidRequestProvided_ReturnSuccess() {
         DetailsRequest detailsRequest = getDetailsRequest();
         Gamer gamer = getGamer();
@@ -422,12 +451,15 @@ class DefaultAuthServiceTest {
         avatar.setId(UUID.randomUUID());
         avatar.setImage("test");
         avatar.setIsSpecial(false);
+        FeignResponse feignResponse = new FeignResponse();
+        feignResponse.setMessage("test");
 
         Mockito.when(jwtService.extractUsername(anyString())).thenReturn("test");
         Mockito.when(gamerRepository.findByEmail(anyString())).thenReturn(Optional.of(gamer));
         Mockito.when(avatarsRepository.findById(any(UUID.class))).thenReturn(Optional.of(avatar));
         Mockito.when(keywordsRepository.findByKeywordName(anyString())).thenReturn(Optional.of(getKeyword()));
         Mockito.when(gamesRepository.findByGameName(anyString())).thenReturn(Optional.of(getGames()));
+        Mockito.when(updateDataFeignService.updateData()).thenReturn(feignResponse);
 
         DefaultMessageResponse result = authService.details(token, detailsRequest);
         assertEquals("100", result.getStatus().getCode());

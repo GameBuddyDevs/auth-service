@@ -7,6 +7,7 @@ import com.back2261.authservice.interfaces.dto.*;
 import com.back2261.authservice.interfaces.request.*;
 import com.back2261.authservice.interfaces.response.*;
 import com.back2261.authservice.util.Constants;
+import feign.FeignException;
 import io.github.GameBuddyDevs.backendlibrary.base.BaseBody;
 import io.github.GameBuddyDevs.backendlibrary.base.Status;
 import io.github.GameBuddyDevs.backendlibrary.enums.Role;
@@ -38,6 +39,7 @@ public class DefaultAuthService implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender emailSender;
+    private final UpdateDataFeignService updateDataFeignService;
 
     @Value("${spring.mail.username}")
     private String sender;
@@ -245,6 +247,12 @@ public class DefaultAuthService implements AuthService {
         mapAndSetUserGames(gamer, favGames);
         gamer.setIsRegistered(true);
         gamerRepository.save(gamer);
+
+        try {
+            updateDataFeignService.updateData();
+        } catch (FeignException e) {
+            throw new BusinessException(TransactionCode.FEIGN_SERVICE_ERROR);
+        }
 
         DefaultMessageResponse verifyResponse = new DefaultMessageResponse();
         DefaultMessageBody body = new DefaultMessageBody("User details fetched successfully");
