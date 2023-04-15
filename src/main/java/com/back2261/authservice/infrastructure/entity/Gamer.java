@@ -34,7 +34,7 @@ public class Gamer implements UserDetails {
 
     private Integer age;
     private String country;
-    private byte[] avatar;
+    private String avatar;
 
     @CreationTimestamp
     private Date createdDate;

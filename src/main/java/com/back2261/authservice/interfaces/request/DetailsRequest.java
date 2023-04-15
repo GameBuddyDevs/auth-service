@@ -16,7 +16,7 @@ public class DetailsRequest {
     @NotBlank(message = "Country field cannot be empty")
     private String country;
 
-    private byte[] avatar;
+    private String avatar;
 
     @Size(max = 1)
     private String gender;

@@ -52,6 +52,9 @@ class DefaultAuthServiceTest {
     private KeywordsRepository keywordsRepository;
 
     @Mock
+    private AvatarsRepository avatarsRepository;
+
+    @Mock
     private JwtService jwtService;
 
     @Mock
@@ -131,7 +134,7 @@ class DefaultAuthServiceTest {
     }
 
     @Test
-    void testLogin_whenUserNotVerified_ReturnError109() {
+    void testLogin_whenUserNotCompleted_ReturnError109() {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setPassword("test");
         loginRequest.setUsernameOrEmail("test");
@@ -415,9 +418,14 @@ class DefaultAuthServiceTest {
     void testDetails_whenValidRequestProvided_ReturnSuccess() {
         DetailsRequest detailsRequest = getDetailsRequest();
         Gamer gamer = getGamer();
+        Avatars avatar = new Avatars();
+        avatar.setId(UUID.randomUUID());
+        avatar.setImage("test");
+        avatar.setIsSpecial(false);
 
         Mockito.when(jwtService.extractUsername(anyString())).thenReturn("test");
         Mockito.when(gamerRepository.findByEmail(anyString())).thenReturn(Optional.of(gamer));
+        Mockito.when(avatarsRepository.findById(any(UUID.class))).thenReturn(Optional.of(avatar));
         Mockito.when(keywordsRepository.findByKeywordName(anyString())).thenReturn(Optional.of(getKeyword()));
         Mockito.when(gamesRepository.findByGameName(anyString())).thenReturn(Optional.of(getGames()));
 
@@ -533,7 +541,7 @@ class DefaultAuthServiceTest {
         Games games = new Games();
         games.setGameId("test");
         games.setGameName("test");
-        games.setGameIcon(new byte[0]);
+        games.setGameIcon("test");
         games.setCategory("test");
         games.setDescription("test");
         games.setAvgVote(1F);
@@ -555,7 +563,7 @@ class DefaultAuthServiceTest {
         gamer.setEmail("test");
         gamer.setAge(15);
         gamer.setCountry("test");
-        gamer.setAvatar(new byte[0]);
+        gamer.setAvatar("test");
         gamer.setCreatedDate(new Date());
         gamer.setLastModifiedDate(new Date());
         gamer.setPwd("test");
@@ -583,7 +591,7 @@ class DefaultAuthServiceTest {
         detailsRequest.setAge(15);
         detailsRequest.setCountry("test");
         detailsRequest.setGender("E");
-        detailsRequest.setAvatar(new byte[0]);
+        detailsRequest.setAvatar(UUID.randomUUID().toString());
         List<String> keywords = new ArrayList<>();
         keywords.add("test");
         keywords.add("test2");

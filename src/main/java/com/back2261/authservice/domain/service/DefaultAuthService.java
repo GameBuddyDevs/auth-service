@@ -33,6 +33,7 @@ public class DefaultAuthService implements AuthService {
     private final GamesRepository gamesRepository;
     private final SessionRepository sessionRepository;
     private final KeywordsRepository keywordsRepository;
+    private final AvatarsRepository avatarsRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
@@ -227,7 +228,7 @@ public class DefaultAuthService implements AuthService {
         Integer age = detailsRequest.getAge();
         String country = detailsRequest.getCountry();
         String gender = detailsRequest.getGender();
-        byte[] avatar = detailsRequest.getAvatar();
+        String avatar = detailsRequest.getAvatar();
         List<String> keyWords = detailsRequest.getKeywords();
         List<String> favGames = detailsRequest.getFavoriteGames();
 
@@ -236,7 +237,9 @@ public class DefaultAuthService implements AuthService {
 
         gamer.setAge(age);
         gamer.setCountry(country);
-        gamer.setAvatar(avatar);
+        String avatarImage =
+                avatarsRepository.findById(UUID.fromString(avatar)).get().getImage();
+        gamer.setAvatar(avatarImage);
         gamer.setGender(gender);
         mapAndSetKeywords(gamer, keyWords);
         mapAndSetUserGames(gamer, favGames);
