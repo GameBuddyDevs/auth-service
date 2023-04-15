@@ -19,7 +19,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: noreply.gamebuddy@gmail.com
-    password: symikbrjjpvsqhlt
+    password: wkqmkfqtjiidqkks
     properties:
       mail:
         smtp:
