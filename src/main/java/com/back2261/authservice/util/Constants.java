@@ -16,4 +16,6 @@ public class Constants {
             Your email: %s
             If you did not request a password reset, please ignore this email.
             """;
+
+    private Constants() {}
 }

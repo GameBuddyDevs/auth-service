@@ -1,6 +1,5 @@
 package com.back2261.authservice.domain.service;
 
-import com.back2261.authservice.exception.BusinessException;
 import com.back2261.authservice.infrastructure.entity.*;
 import com.back2261.authservice.infrastructure.repository.*;
 import com.back2261.authservice.interfaces.dto.*;
@@ -12,9 +11,11 @@ import io.github.GameBuddyDevs.backendlibrary.base.BaseBody;
 import io.github.GameBuddyDevs.backendlibrary.base.Status;
 import io.github.GameBuddyDevs.backendlibrary.enums.Role;
 import io.github.GameBuddyDevs.backendlibrary.enums.TransactionCode;
+import io.github.GameBuddyDevs.backendlibrary.exception.BusinessException;
 import io.github.GameBuddyDevs.backendlibrary.interfaces.DefaultMessageBody;
 import io.github.GameBuddyDevs.backendlibrary.interfaces.DefaultMessageResponse;
 import io.github.GameBuddyDevs.backendlibrary.service.JwtService;
+import java.security.SecureRandom;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +45,8 @@ public class DefaultAuthService implements AuthService {
     @Value("${spring.mail.username}")
     private String sender;
 
+    private static final SecureRandom random = new SecureRandom();
+
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
         String usernameOrEmail = loginRequest.getUsernameOrEmail();
@@ -66,13 +69,13 @@ public class DefaultAuthService implements AuthService {
             throw new BusinessException(TransactionCode.WRONG_PASSWORD);
         }
 
-        if (gamer.getIsBlocked()) {
+        if (Boolean.TRUE.equals(gamer.getIsBlocked())) {
             throw new BusinessException(TransactionCode.USER_BLOCKED);
         }
-        if (!gamer.getIsVerified()) {
+        if (Boolean.FALSE.equals(gamer.getIsVerified())) {
             throw new BusinessException(TransactionCode.USER_NOT_VERIFIED);
         }
-        if (!gamer.getIsRegistered()) {
+        if (Boolean.FALSE.equals(gamer.getIsRegistered())) {
             throw new BusinessException(TransactionCode.USER_NOT_COMPLETED);
         }
 
@@ -112,7 +115,7 @@ public class DefaultAuthService implements AuthService {
         newGamer.setRole(Role.USER);
         gamerRepository.save(newGamer);
 
-        Integer code = new Random().nextInt(900000) + 100000;
+        Integer code = getRandomNumber();
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(sender);
@@ -239,8 +242,10 @@ public class DefaultAuthService implements AuthService {
 
         gamer.setAge(age);
         gamer.setCountry(country);
-        String avatarImage =
-                avatarsRepository.findById(UUID.fromString(avatar)).get().getImage();
+        String avatarImage = avatarsRepository
+                .findById(UUID.fromString(avatar))
+                .orElseThrow()
+                .getImage();
         gamer.setAvatar(avatarImage);
         gamer.setGender(gender);
         mapAndSetKeywords(gamer, keyWords);
@@ -297,16 +302,16 @@ public class DefaultAuthService implements AuthService {
             throw new BusinessException(TransactionCode.USER_NOT_FOUND);
         }
         List<VerificationCode> verificationCodes = verificationCodeRepository.findAllByEmail(email);
-        if (verificationCodes.size() > 0) {
+        if (Boolean.FALSE.equals(verificationCodes.isEmpty())) {
             verificationCodes.forEach(verificationCode -> verificationCode.setIsValid(false));
         }
-        Integer code = new Random().nextInt(900000) + 100000;
+        Integer code = getRandomNumber();
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(sender);
             message.setTo(email);
-            if (sendCodeRequest.getIsRegister()) {
+            if (Boolean.TRUE.equals(sendCodeRequest.getIsRegister())) {
                 message.setSubject(String.format(Constants.EMAIL_SUBJECT, code));
                 message.setText(String.format(Constants.EMAIL_TEXT, code));
             } else {
@@ -329,13 +334,17 @@ public class DefaultAuthService implements AuthService {
         return response;
     }
 
+    private int getRandomNumber() {
+        return random.nextInt(900000) + 100000;
+    }
+
     private Gamer checkGamer(String email) {
         Optional<Gamer> userOptional = gamerRepository.findByEmail(email);
         if (userOptional.isEmpty()) {
             throw new BusinessException(TransactionCode.USER_NOT_FOUND);
         }
         Gamer gamer = userOptional.get();
-        if (!gamer.getIsVerified()) {
+        if (Boolean.FALSE.equals(gamer.getIsVerified())) {
             throw new BusinessException(TransactionCode.USER_NOT_VERIFIED);
         }
         return gamer;

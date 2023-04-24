@@ -1,8 +1,8 @@
 package com.back2261.authservice.config;
 
-import com.back2261.authservice.exception.BusinessException;
 import com.back2261.authservice.infrastructure.repository.GamerRepository;
 import io.github.GameBuddyDevs.backendlibrary.enums.TransactionCode;
+import io.github.GameBuddyDevs.backendlibrary.exception.BusinessException;
 import io.github.GameBuddyDevs.backendlibrary.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

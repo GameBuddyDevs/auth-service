@@ -3,7 +3,6 @@ package com.back2261.authservice.domain.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 
-import com.back2261.authservice.exception.BusinessException;
 import com.back2261.authservice.infrastructure.entity.*;
 import com.back2261.authservice.infrastructure.repository.*;
 import com.back2261.authservice.interfaces.request.*;
@@ -12,6 +11,7 @@ import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
 import io.github.GameBuddyDevs.backendlibrary.enums.Role;
+import io.github.GameBuddyDevs.backendlibrary.exception.BusinessException;
 import io.github.GameBuddyDevs.backendlibrary.interfaces.DefaultMessageResponse;
 import io.github.GameBuddyDevs.backendlibrary.service.JwtService;
 import java.util.*;
