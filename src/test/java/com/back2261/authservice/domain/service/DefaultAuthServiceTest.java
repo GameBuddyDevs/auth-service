@@ -55,9 +55,6 @@ class DefaultAuthServiceTest {
     private KeywordsRepository keywordsRepository;
 
     @Mock
-    private AvatarsRepository avatarsRepository;
-
-    @Mock
     private JwtService jwtService;
 
     @Mock
@@ -424,14 +421,10 @@ class DefaultAuthServiceTest {
     void testDetails_whenFeignServiceErrorOccur_ReturnError123() {
         DetailsRequest detailsRequest = getDetailsRequest();
         Gamer gamer = getGamer();
-        Avatars avatar = new Avatars();
-        avatar.setId(UUID.randomUUID());
-        avatar.setImage("test");
-        avatar.setIsSpecial(false);
+
         Request request = Request.create(Request.HttpMethod.GET, "url", new HashMap<>(), null, new RequestTemplate());
         Mockito.when(jwtService.extractUsername(anyString())).thenReturn("test");
         Mockito.when(gamerRepository.findByEmail(anyString())).thenReturn(Optional.of(gamer));
-        Mockito.when(avatarsRepository.findById(any(UUID.class))).thenReturn(Optional.of(avatar));
         Mockito.when(keywordsRepository.findByKeywordName(anyString())).thenReturn(Optional.of(getKeyword()));
         Mockito.when(gamesRepository.findByGameName(anyString())).thenReturn(Optional.of(getGames()));
         Mockito.doThrow(new FeignException.BadRequest("test", request, null, null))
@@ -447,16 +440,11 @@ class DefaultAuthServiceTest {
     void testDetails_whenValidRequestProvided_ReturnSuccess() {
         DetailsRequest detailsRequest = getDetailsRequest();
         Gamer gamer = getGamer();
-        Avatars avatar = new Avatars();
-        avatar.setId(UUID.randomUUID());
-        avatar.setImage("test");
-        avatar.setIsSpecial(false);
         FeignResponse feignResponse = new FeignResponse();
         feignResponse.setMessage("test");
 
         Mockito.when(jwtService.extractUsername(anyString())).thenReturn("test");
         Mockito.when(gamerRepository.findByEmail(anyString())).thenReturn(Optional.of(gamer));
-        Mockito.when(avatarsRepository.findById(any(UUID.class))).thenReturn(Optional.of(avatar));
         Mockito.when(keywordsRepository.findByKeywordName(anyString())).thenReturn(Optional.of(getKeyword()));
         Mockito.when(gamesRepository.findByGameName(anyString())).thenReturn(Optional.of(getGames()));
         Mockito.when(updateDataFeignService.updateData()).thenReturn(feignResponse);
@@ -595,7 +583,7 @@ class DefaultAuthServiceTest {
         gamer.setEmail("test");
         gamer.setAge(15);
         gamer.setCountry("test");
-        gamer.setAvatar("test");
+        gamer.setAvatar(UUID.randomUUID());
         gamer.setCreatedDate(new Date());
         gamer.setLastModifiedDate(new Date());
         gamer.setPwd("test");

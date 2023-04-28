@@ -2,10 +2,7 @@ package com.back2261.authservice.infrastructure.entity;
 
 import io.github.GameBuddyDevs.backendlibrary.enums.Role;
 import jakarta.persistence.*;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,7 +31,7 @@ public class Gamer implements UserDetails {
 
     private Integer age;
     private String country;
-    private String avatar;
+    private UUID avatar;
 
     @CreationTimestamp
     private Date createdDate;
