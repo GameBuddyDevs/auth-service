@@ -43,6 +43,7 @@ public class Gamer implements UserDetails {
     private String gender;
     private Boolean isBlocked = false;
     private Boolean isRegistered = false;
+    private String fcmToken;
 
     @Enumerated(EnumType.STRING)
     private Role role;

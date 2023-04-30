@@ -5,7 +5,6 @@ import com.back2261.authservice.infrastructure.repository.*;
 import com.back2261.authservice.interfaces.dto.*;
 import com.back2261.authservice.interfaces.request.*;
 import com.back2261.authservice.interfaces.response.*;
-import com.back2261.authservice.util.Constants;
 import feign.FeignException;
 import io.github.GameBuddyDevs.backendlibrary.base.BaseBody;
 import io.github.GameBuddyDevs.backendlibrary.base.Status;
@@ -17,6 +16,8 @@ import io.github.GameBuddyDevs.backendlibrary.interfaces.DefaultMessageResponse;
 import io.github.GameBuddyDevs.backendlibrary.service.JwtService;
 import java.security.SecureRandom;
 import java.util.*;
+
+import io.github.GameBuddyDevs.backendlibrary.util.Constants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -102,6 +103,7 @@ public class DefaultAuthService implements AuthService {
     public RegisterResponse register(RegisterRequest registerRequest) {
         String email = registerRequest.getEmail();
         String password = registerRequest.getPassword();
+        String fcmToken = registerRequest.getFcmToken();
         Optional<Gamer> gamerOptional = gamerRepository.findByEmail(email);
         if (gamerOptional.isPresent()) {
             throw new BusinessException(TransactionCode.EMAIL_EXISTS);
@@ -112,6 +114,7 @@ public class DefaultAuthService implements AuthService {
         String encodedPassword = passwordEncoder.encode(password);
         newGamer.setPwd(encodedPassword);
         newGamer.setRole(Role.USER);
+        newGamer.setFcmToken(fcmToken);
         gamerRepository.save(newGamer);
 
         Integer code = getRandomNumber();

@@ -14,4 +14,7 @@ public class RegisterRequest {
 
     @NotBlank(message = "Password field cannot be empty")
     private String password;
+
+    @NotBlank(message = "Firebase token field cannot be empty")
+    private String fcmToken;
 }
