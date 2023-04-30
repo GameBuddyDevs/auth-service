@@ -99,6 +99,7 @@ class AuthControllerTest {
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setPassword("test");
         registerRequest.setEmail("test@test.com");
+        registerRequest.setFcmToken("test");
 
         RegisterResponse registerResponse = new RegisterResponse();
         RegisterResponseBody registerResponseBody = new RegisterResponseBody();
