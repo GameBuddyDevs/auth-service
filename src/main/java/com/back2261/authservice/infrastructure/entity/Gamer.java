@@ -64,6 +64,14 @@ public class Gamer implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "game_id"))
     private Set<Games> likedgames;
 
+    @ManyToMany
+    @JoinTable(
+            name = "bought_avatars",
+            schema = "schappl",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "avatar_id"))
+    private Set<Avatars> boughtAvatars;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));

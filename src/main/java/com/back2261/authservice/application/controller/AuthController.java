@@ -66,4 +66,11 @@ public class AuthController {
             @Valid @RequestBody ChangePwdRequest changePwdRequest) {
         return new ResponseEntity<>(authService.changePwd(token.substring(7), changePwdRequest), HttpStatus.OK);
     }
+
+    @PutMapping("/change/avatar")
+    public ResponseEntity<DefaultMessageResponse> changeAvatar(
+            @Valid @RequestHeader(AUTHORIZATION) @NotBlank(message = AUTH_MESSAGE) String token,
+            @Valid @RequestBody ChangeAvatarRequest changeAvatarRequest) {
+        return new ResponseEntity<>(authService.changeAvatar(token.substring(7), changeAvatarRequest), HttpStatus.OK);
+    }
 }

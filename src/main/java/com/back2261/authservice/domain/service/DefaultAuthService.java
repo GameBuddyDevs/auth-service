@@ -35,6 +35,7 @@ public class DefaultAuthService implements AuthService {
     private final GamesRepository gamesRepository;
     private final SessionRepository sessionRepository;
     private final KeywordsRepository keywordsRepository;
+    private final AvatarsRepository avatarsRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
@@ -198,6 +199,28 @@ public class DefaultAuthService implements AuthService {
         gamerRepository.save(gamer);
         DefaultMessageResponse response = new DefaultMessageResponse();
         DefaultMessageBody body = new DefaultMessageBody("Password changed successfully.");
+        response.setBody(new BaseBody<>(body));
+        response.setStatus(new Status(TransactionCode.DEFAULT_100));
+        return response;
+    }
+
+    @Override
+    public DefaultMessageResponse changeAvatar(String token, ChangeAvatarRequest avatarRequest) {
+        String avatarId = avatarRequest.getAvatarId();
+        Avatars avatar = avatarsRepository
+                .findById(UUID.fromString(avatarId))
+                .orElseThrow(() -> new BusinessException(TransactionCode.AVATAR_NOT_FOUND));
+        String email = jwtService.extractUsername(token);
+        Gamer gamer = checkGamer(email);
+        if (avatar.getIsSpecial()
+                && Boolean.FALSE.equals(gamer.getBoughtAvatars().contains(avatar))) {
+            throw new BusinessException(TransactionCode.AVATAR_NOT_BOUGHT);
+        }
+        gamer.setAvatar(UUID.fromString(avatarId));
+        gamerRepository.save(gamer);
+
+        DefaultMessageResponse response = new DefaultMessageResponse();
+        DefaultMessageBody body = new DefaultMessageBody("Avatar changed successfully.");
         response.setBody(new BaseBody<>(body));
         response.setStatus(new Status(TransactionCode.DEFAULT_100));
         return response;

@@ -13,6 +13,8 @@ public interface AuthService {
 
     DefaultMessageResponse changePwd(String token, ChangePwdRequest changePwdRequest);
 
+    DefaultMessageResponse changeAvatar(String token, ChangeAvatarRequest changeAvatarRequest);
+
     DefaultMessageResponse setUsername(String token, UsernameRequest usernameRequest);
 
     DefaultMessageResponse details(String token, DetailsRequest detailsRequest);

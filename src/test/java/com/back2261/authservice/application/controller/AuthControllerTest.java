@@ -23,6 +23,7 @@ import io.github.GameBuddyDevs.backendlibrary.interfaces.DefaultMessageResponse;
 import io.github.GameBuddyDevs.backendlibrary.service.JwtService;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -284,6 +285,31 @@ class AuthControllerTest {
                 .contentType("application/json")
                 .header("Authorization", "Bearer " + token)
                 .content(objectMapper.writeValueAsString(changePwdRequest));
+        var response = mockMvc.perform(request)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertEquals(200, response.getResponse().getStatus());
+    }
+
+    @Test
+    void testChangeAvatar_whenValidAvatarIdProvided_shouldReturnSuccessMessage() throws Exception {
+        ChangeAvatarRequest changeAvatarRequest = new ChangeAvatarRequest();
+        changeAvatarRequest.setAvatarId(UUID.randomUUID().toString());
+
+        DefaultMessageResponse defaultMessageResponse = new DefaultMessageResponse();
+        DefaultMessageBody defaultMessageBody = new DefaultMessageBody("test");
+        defaultMessageResponse.setBody(new BaseBody<>(defaultMessageBody));
+        defaultMessageResponse.setStatus(new Status(TransactionCode.DEFAULT_100));
+
+        Mockito.when(defaultAuthService.changeAvatar(Mockito.anyString(), Mockito.any(ChangeAvatarRequest.class)))
+                .thenReturn(defaultMessageResponse);
+
+        var request = MockMvcRequestBuilders.put("/auth/change/avatar")
+                .contentType("application/json")
+                .header("Authorization", "Bearer " + token)
+                .content(objectMapper.writeValueAsString(changeAvatarRequest));
         var response = mockMvc.perform(request)
                 .andDo(print())
                 .andExpect(status().isOk())

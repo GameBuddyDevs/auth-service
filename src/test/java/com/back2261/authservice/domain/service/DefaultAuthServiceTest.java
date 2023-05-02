@@ -55,6 +55,9 @@ class DefaultAuthServiceTest {
     private KeywordsRepository keywordsRepository;
 
     @Mock
+    private AvatarsRepository avatarsRepository;
+
+    @Mock
     private JwtService jwtService;
 
     @Mock
@@ -557,6 +560,77 @@ class DefaultAuthServiceTest {
         assertEquals("100", result.getStatus().getCode());
     }
 
+    @Test
+    void testChangeAvatar_whenAvatarNotFound_ReturnErrorCode127() {
+        ChangeAvatarRequest changeAvatarRequest = new ChangeAvatarRequest();
+        changeAvatarRequest.setAvatarId(UUID.randomUUID().toString());
+
+        Mockito.when(avatarsRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+
+        BusinessException exception =
+                assertThrows(BusinessException.class, () -> authService.changeAvatar(token, changeAvatarRequest));
+        assertEquals(127, exception.getTransactionCode().getId());
+    }
+
+    @Test
+    void testChangeAvatar_whenAvatarIsSpecialAndNotBought_ReturnErrorCode137() {
+        Gamer gamer = getGamer();
+        ChangeAvatarRequest changeAvatarRequest = new ChangeAvatarRequest();
+        changeAvatarRequest.setAvatarId(UUID.randomUUID().toString());
+        Avatars avatars = new Avatars();
+        avatars.setIsSpecial(true);
+        avatars.setImage("test");
+        avatars.setId(UUID.randomUUID());
+        avatars.setPrice(100);
+
+        Mockito.when(avatarsRepository.findById(any(UUID.class))).thenReturn(Optional.of(avatars));
+        Mockito.when(jwtService.extractUsername(anyString())).thenReturn(gamer.getEmail());
+        Mockito.when(gamerRepository.findByEmail(anyString())).thenReturn(Optional.of(gamer));
+
+        BusinessException exception =
+                assertThrows(BusinessException.class, () -> authService.changeAvatar(token, changeAvatarRequest));
+        assertEquals(137, exception.getTransactionCode().getId());
+    }
+
+    @Test
+    void testChangeAvatar_whenAvatarIsSpecialAndBought_ReturnSuccess() {
+        Gamer gamer = getGamer();
+        ChangeAvatarRequest changeAvatarRequest = new ChangeAvatarRequest();
+        changeAvatarRequest.setAvatarId(UUID.randomUUID().toString());
+        Avatars avatars = new Avatars();
+        avatars.setIsSpecial(true);
+        avatars.setImage("test");
+        avatars.setId(UUID.randomUUID());
+        avatars.setPrice(100);
+        gamer.getBoughtAvatars().add(avatars);
+
+        Mockito.when(avatarsRepository.findById(any(UUID.class))).thenReturn(Optional.of(avatars));
+        Mockito.when(jwtService.extractUsername(anyString())).thenReturn(gamer.getEmail());
+        Mockito.when(gamerRepository.findByEmail(anyString())).thenReturn(Optional.of(gamer));
+
+        DefaultMessageResponse result = authService.changeAvatar(token, changeAvatarRequest);
+        assertEquals("100", result.getStatus().getCode());
+    }
+
+    @Test
+    void testChangeAvatar_whenFreeAvatarProvided_ReturnSuccess() {
+        Gamer gamer = getGamer();
+        ChangeAvatarRequest changeAvatarRequest = new ChangeAvatarRequest();
+        changeAvatarRequest.setAvatarId(UUID.randomUUID().toString());
+        Avatars avatars = new Avatars();
+        avatars.setIsSpecial(false);
+        avatars.setImage("test");
+        avatars.setId(UUID.randomUUID());
+        avatars.setPrice(100);
+
+        Mockito.when(avatarsRepository.findById(any(UUID.class))).thenReturn(Optional.of(avatars));
+        Mockito.when(jwtService.extractUsername(anyString())).thenReturn(gamer.getEmail());
+        Mockito.when(gamerRepository.findByEmail(anyString())).thenReturn(Optional.of(gamer));
+
+        DefaultMessageResponse result = authService.changeAvatar(token, changeAvatarRequest);
+        assertEquals("100", result.getStatus().getCode());
+    }
+
     private Games getGames() {
         Games games = new Games();
         games.setGameId("test");
@@ -594,6 +668,7 @@ class DefaultAuthServiceTest {
         gamer.setIsVerified(true);
         gamer.setLikedgames(new HashSet<>());
         gamer.setKeywords(new HashSet<>());
+        gamer.setBoughtAvatars(new HashSet<>());
         return gamer;
     }
 
