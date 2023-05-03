@@ -428,8 +428,8 @@ class DefaultAuthServiceTest {
         Request request = Request.create(Request.HttpMethod.GET, "url", new HashMap<>(), null, new RequestTemplate());
         Mockito.when(jwtService.extractUsername(anyString())).thenReturn("test");
         Mockito.when(gamerRepository.findByEmail(anyString())).thenReturn(Optional.of(gamer));
-        Mockito.when(keywordsRepository.findByKeywordName(anyString())).thenReturn(Optional.of(getKeyword()));
-        Mockito.when(gamesRepository.findByGameName(anyString())).thenReturn(Optional.of(getGames()));
+        Mockito.when(keywordsRepository.findById(anyString())).thenReturn(Optional.of(getKeyword()));
+        Mockito.when(gamesRepository.findById(anyString())).thenReturn(Optional.of(getGames()));
         Mockito.doThrow(new FeignException.BadRequest("test", request, null, null))
                 .when(updateDataFeignService)
                 .updateData();
@@ -448,8 +448,8 @@ class DefaultAuthServiceTest {
 
         Mockito.when(jwtService.extractUsername(anyString())).thenReturn("test");
         Mockito.when(gamerRepository.findByEmail(anyString())).thenReturn(Optional.of(gamer));
-        Mockito.when(keywordsRepository.findByKeywordName(anyString())).thenReturn(Optional.of(getKeyword()));
-        Mockito.when(gamesRepository.findByGameName(anyString())).thenReturn(Optional.of(getGames()));
+        Mockito.when(keywordsRepository.findById(anyString())).thenReturn(Optional.of(getKeyword()));
+        Mockito.when(gamesRepository.findById(anyString())).thenReturn(Optional.of(getGames()));
         Mockito.when(updateDataFeignService.updateData()).thenReturn(feignResponse);
 
         DefaultMessageResponse result = authService.details(token, detailsRequest);

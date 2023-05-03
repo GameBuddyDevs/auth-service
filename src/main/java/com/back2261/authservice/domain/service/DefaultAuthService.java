@@ -373,21 +373,18 @@ public class DefaultAuthService implements AuthService {
 
     private void mapAndSetUserGames(Gamer gamer, List<String> favGames) {
         favGames.forEach(game -> {
-            Optional<Games> gameOptional = gamesRepository.findByGameName(game);
-            if (gameOptional.isPresent()) {
-                Games game1 = gameOptional.get();
-                gamer.getLikedgames().add(game1);
-            }
+            Games games =
+                    gamesRepository.findById(game).orElseThrow(() -> new BusinessException(TransactionCode.DB_ERROR));
+            gamer.getLikedgames().add(games);
         });
     }
 
     private void mapAndSetKeywords(Gamer gamer, List<String> keyWords) {
         keyWords.forEach(keyword -> {
-            Optional<Keywords> keywordOptional = keywordsRepository.findByKeywordName(keyword);
-            if (keywordOptional.isPresent()) {
-                Keywords keyword1 = keywordOptional.get();
-                gamer.getKeywords().add(keyword1);
-            }
+            Keywords keywords = keywordsRepository
+                    .findById(keyword)
+                    .orElseThrow(() -> new BusinessException(TransactionCode.DB_ERROR));
+            gamer.getKeywords().add(keywords);
         });
     }
 
