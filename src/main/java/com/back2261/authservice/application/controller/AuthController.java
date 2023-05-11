@@ -73,4 +73,26 @@ public class AuthController {
             @Valid @RequestBody ChangeAvatarRequest changeAvatarRequest) {
         return new ResponseEntity<>(authService.changeAvatar(token.substring(7), changeAvatarRequest), HttpStatus.OK);
     }
+
+    @PutMapping("/change/age")
+    public ResponseEntity<DefaultMessageResponse> changeAge(
+            @Valid @RequestHeader(AUTHORIZATION) @NotBlank(message = AUTH_MESSAGE) String token,
+            @Valid @RequestBody ChangeAgeRequest changeAgeRequest) {
+        return new ResponseEntity<>(authService.changeAge(token.substring(7), changeAgeRequest), HttpStatus.OK);
+    }
+
+    @PutMapping("/change/games")
+    public ResponseEntity<DefaultMessageResponse> changeGames(
+            @Valid @RequestHeader(AUTHORIZATION) @NotBlank(message = AUTH_MESSAGE) String token,
+            @Valid @RequestBody ChangeDetailRequest changeGamesRequest) {
+        return new ResponseEntity<>(authService.changeGames(token.substring(7), changeGamesRequest), HttpStatus.OK);
+    }
+
+    @PutMapping("/change/keywords")
+    public ResponseEntity<DefaultMessageResponse> changeKeywords(
+            @Valid @RequestHeader(AUTHORIZATION) @NotBlank(message = AUTH_MESSAGE) String token,
+            @Valid @RequestBody ChangeDetailRequest changeKeywordsRequest) {
+        return new ResponseEntity<>(
+                authService.changeKeywords(token.substring(7), changeKeywordsRequest), HttpStatus.OK);
+    }
 }

@@ -22,4 +22,10 @@ public interface AuthService {
     TokenResponse validateToken(String token);
 
     DefaultMessageResponse sendVerificationEmail(SendCodeRequest sendCodeRequest);
+
+    DefaultMessageResponse changeAge(String token, ChangeAgeRequest changeAgeRequest);
+
+    DefaultMessageResponse changeGames(String token, ChangeDetailRequest changeGamesRequest);
+
+    DefaultMessageResponse changeKeywords(String token, ChangeDetailRequest changeKeywordsRequest);
 }

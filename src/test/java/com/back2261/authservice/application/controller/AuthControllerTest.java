@@ -317,4 +317,87 @@ class AuthControllerTest {
 
         assertEquals(200, response.getResponse().getStatus());
     }
+
+    @Test
+    void testChangeAge_whenValidAgeProvided_shouldReturnSuccessMessage() throws Exception {
+        ChangeAgeRequest changeAgeRequest = new ChangeAgeRequest();
+        changeAgeRequest.setAge(20);
+
+        DefaultMessageResponse defaultMessageResponse = new DefaultMessageResponse();
+        DefaultMessageBody defaultMessageBody = new DefaultMessageBody("test");
+        defaultMessageResponse.setBody(new BaseBody<>(defaultMessageBody));
+        defaultMessageResponse.setStatus(new Status(TransactionCode.DEFAULT_100));
+
+        Mockito.when(defaultAuthService.changeAge(Mockito.anyString(), Mockito.any(ChangeAgeRequest.class)))
+                .thenReturn(defaultMessageResponse);
+
+        var request = MockMvcRequestBuilders.put("/auth/change/age")
+                .contentType("application/json")
+                .header("Authorization", "Bearer " + token)
+                .content(objectMapper.writeValueAsString(changeAgeRequest));
+        var response = mockMvc.perform(request)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertEquals(200, response.getResponse().getStatus());
+    }
+
+    @Test
+    void testChangeGames_whenValidGamesProvided_shouldReturnSuccessMessage() throws Exception {
+        ChangeDetailRequest changeGamesRequest = new ChangeDetailRequest();
+        List<String> dummyList = new ArrayList<>();
+        dummyList.add("test");
+        dummyList.add("test2");
+        dummyList.add("test3");
+        changeGamesRequest.setGamesOrKeywordsList(dummyList);
+
+        DefaultMessageResponse defaultMessageResponse = new DefaultMessageResponse();
+        DefaultMessageBody defaultMessageBody = new DefaultMessageBody("test");
+        defaultMessageResponse.setBody(new BaseBody<>(defaultMessageBody));
+        defaultMessageResponse.setStatus(new Status(TransactionCode.DEFAULT_100));
+
+        Mockito.when(defaultAuthService.changeGames(Mockito.anyString(), Mockito.any(ChangeDetailRequest.class)))
+                .thenReturn(defaultMessageResponse);
+
+        var request = MockMvcRequestBuilders.put("/auth/change/games")
+                .contentType("application/json")
+                .header("Authorization", "Bearer " + token)
+                .content(objectMapper.writeValueAsString(changeGamesRequest));
+        var response = mockMvc.perform(request)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertEquals(200, response.getResponse().getStatus());
+    }
+
+    @Test
+    void testChangeKeywords_whenValidKeywordsProvided_shouldReturnSuccessMessage() throws Exception {
+        ChangeDetailRequest changeKeywordsRequest = new ChangeDetailRequest();
+        List<String> dummyList = new ArrayList<>();
+        dummyList.add(UUID.randomUUID().toString());
+        dummyList.add(UUID.randomUUID().toString());
+        dummyList.add(UUID.randomUUID().toString());
+        changeKeywordsRequest.setGamesOrKeywordsList(dummyList);
+
+        DefaultMessageResponse defaultMessageResponse = new DefaultMessageResponse();
+        DefaultMessageBody defaultMessageBody = new DefaultMessageBody("test");
+        defaultMessageResponse.setBody(new BaseBody<>(defaultMessageBody));
+        defaultMessageResponse.setStatus(new Status(TransactionCode.DEFAULT_100));
+
+        Mockito.when(defaultAuthService.changeKeywords(Mockito.anyString(), Mockito.any(ChangeDetailRequest.class)))
+                .thenReturn(defaultMessageResponse);
+
+        var request = MockMvcRequestBuilders.put("/auth/change/keywords")
+                .contentType("application/json")
+                .header("Authorization", "Bearer " + token)
+                .content(objectMapper.writeValueAsString(changeKeywordsRequest));
+        var response = mockMvc.perform(request)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertEquals(200, response.getResponse().getStatus());
+    }
 }

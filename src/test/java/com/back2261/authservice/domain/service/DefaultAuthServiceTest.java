@@ -428,7 +428,7 @@ class DefaultAuthServiceTest {
         Request request = Request.create(Request.HttpMethod.GET, "url", new HashMap<>(), null, new RequestTemplate());
         Mockito.when(jwtService.extractUsername(anyString())).thenReturn("test");
         Mockito.when(gamerRepository.findByEmail(anyString())).thenReturn(Optional.of(gamer));
-        Mockito.when(keywordsRepository.findById(anyString())).thenReturn(Optional.of(getKeyword()));
+        Mockito.when(keywordsRepository.findById(any(UUID.class))).thenReturn(Optional.of(getKeyword()));
         Mockito.when(gamesRepository.findById(anyString())).thenReturn(Optional.of(getGames()));
         Mockito.doThrow(new FeignException.BadRequest("test", request, null, null))
                 .when(updateDataFeignService)
@@ -448,7 +448,7 @@ class DefaultAuthServiceTest {
 
         Mockito.when(jwtService.extractUsername(anyString())).thenReturn("test");
         Mockito.when(gamerRepository.findByEmail(anyString())).thenReturn(Optional.of(gamer));
-        Mockito.when(keywordsRepository.findById(anyString())).thenReturn(Optional.of(getKeyword()));
+        Mockito.when(keywordsRepository.findById(any(UUID.class))).thenReturn(Optional.of(getKeyword()));
         Mockito.when(gamesRepository.findById(anyString())).thenReturn(Optional.of(getGames()));
         Mockito.when(updateDataFeignService.updateData()).thenReturn(feignResponse);
 
@@ -631,6 +631,60 @@ class DefaultAuthServiceTest {
         assertEquals("100", result.getStatus().getCode());
     }
 
+    @Test
+    void testChangeAge_whenCalled_ReturnSuccess() {
+        Gamer gamer = getGamer();
+        ChangeAgeRequest changeAgeRequest = new ChangeAgeRequest();
+        changeAgeRequest.setAge(35);
+
+        Mockito.when(jwtService.extractUsername(anyString())).thenReturn(gamer.getEmail());
+        Mockito.when(gamerRepository.findByEmail(anyString())).thenReturn(Optional.of(gamer));
+
+        DefaultMessageResponse result = authService.changeAge(token, changeAgeRequest);
+        assertEquals("100", result.getStatus().getCode());
+        assertEquals(35, gamer.getAge());
+    }
+
+    @Test
+    void testChangeGames_whenCalled_ReturnSuccess() {
+        Gamer gamer = getGamer();
+        Games games = getGames();
+        List<String> gamesList = new ArrayList<>();
+        gamesList.add("test");
+        gamesList.add("test");
+        gamesList.add("test");
+        ChangeDetailRequest changeGamesRequest = new ChangeDetailRequest();
+        changeGamesRequest.setGamesOrKeywordsList(gamesList);
+
+        Mockito.when(jwtService.extractUsername(anyString())).thenReturn(gamer.getEmail());
+        Mockito.when(gamerRepository.findByEmail(anyString())).thenReturn(Optional.of(gamer));
+        Mockito.when(gamesRepository.findById(anyString())).thenReturn(Optional.of(games));
+
+        DefaultMessageResponse result = authService.changeGames(token, changeGamesRequest);
+        assertEquals("100", result.getStatus().getCode());
+        assertEquals(1, gamer.getLikedgames().size());
+    }
+
+    @Test
+    void testChangeKeywords_whenCalled_ReturnSuccess() {
+        Gamer gamer = getGamer();
+        Keywords keyword = getKeyword();
+        List<String> keywordsList = new ArrayList<>();
+        keywordsList.add(UUID.randomUUID().toString());
+        keywordsList.add(UUID.randomUUID().toString());
+        keywordsList.add(UUID.randomUUID().toString());
+        ChangeDetailRequest changeKeywordsRequest = new ChangeDetailRequest();
+        changeKeywordsRequest.setGamesOrKeywordsList(keywordsList);
+
+        Mockito.when(jwtService.extractUsername(anyString())).thenReturn(gamer.getEmail());
+        Mockito.when(gamerRepository.findByEmail(anyString())).thenReturn(Optional.of(gamer));
+        Mockito.when(keywordsRepository.findById(any(UUID.class))).thenReturn(Optional.of(keyword));
+
+        DefaultMessageResponse result = authService.changeKeywords(token, changeKeywordsRequest);
+        assertEquals("100", result.getStatus().getCode());
+        assertEquals(1, gamer.getKeywords().size());
+    }
+
     private Games getGames() {
         Games games = new Games();
         games.setGameId("test");
@@ -688,8 +742,8 @@ class DefaultAuthServiceTest {
         detailsRequest.setGender("E");
         detailsRequest.setAvatar(UUID.randomUUID().toString());
         List<String> keywords = new ArrayList<>();
-        keywords.add("test");
-        keywords.add("test2");
+        keywords.add(UUID.randomUUID().toString());
+        keywords.add(UUID.randomUUID().toString());
         detailsRequest.setKeywords(keywords);
         List<String> favoriteGames = new ArrayList<>();
         favoriteGames.add("test");

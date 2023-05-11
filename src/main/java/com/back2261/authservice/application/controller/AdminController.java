@@ -63,7 +63,7 @@ public class AdminController {
         return new ResponseEntity<>(adminService.addKeyword(token.substring(7), keywordRequest), HttpStatus.OK);
     }
 
-    @PutMapping("/delete/reported/message/{messageId}")
+    @DeleteMapping("/delete/reported/message/{messageId}")
     public ResponseEntity<DefaultMessageResponse> deleteReportedMessage(
             @Valid @RequestHeader(AUTHORIZATION) @NotBlank(message = AUTH_MESSAGE) String token,
             @Valid @PathVariable String messageId) {

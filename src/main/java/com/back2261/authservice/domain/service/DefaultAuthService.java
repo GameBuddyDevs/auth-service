@@ -212,7 +212,7 @@ public class DefaultAuthService implements AuthService {
                 .orElseThrow(() -> new BusinessException(TransactionCode.AVATAR_NOT_FOUND));
         String email = jwtService.extractUsername(token);
         Gamer gamer = checkGamer(email);
-        if (avatar.getIsSpecial()
+        if (Boolean.TRUE.equals(avatar.getIsSpecial())
                 && Boolean.FALSE.equals(gamer.getBoughtAvatars().contains(avatar))) {
             throw new BusinessException(TransactionCode.AVATAR_NOT_BOUGHT);
         }
@@ -355,6 +355,64 @@ public class DefaultAuthService implements AuthService {
         return response;
     }
 
+    @Override
+    public DefaultMessageResponse changeAge(String token, ChangeAgeRequest changeAgeRequest) {
+        Integer age = changeAgeRequest.getAge();
+        String email = jwtService.extractUsername(token);
+        Gamer gamer = checkGamer(email);
+        gamer.setAge(age);
+        gamerRepository.save(gamer);
+        DefaultMessageResponse response = new DefaultMessageResponse();
+        DefaultMessageBody body = new DefaultMessageBody("Age changed successfully");
+        response.setBody(new BaseBody<>(body));
+        response.setStatus(new Status(TransactionCode.DEFAULT_100));
+        return response;
+    }
+
+    @Override
+    public DefaultMessageResponse changeGames(String token, ChangeDetailRequest changeGamesRequest) {
+        List<String> newFavGames = changeGamesRequest.getGamesOrKeywordsList();
+        String email = jwtService.extractUsername(token);
+        Gamer gamer = checkGamer(email);
+        gamer.getLikedgames().clear();
+        mapAndSetUserGames(gamer, newFavGames);
+        gamerRepository.save(gamer);
+
+        try {
+            updateDataFeignService.updateData();
+        } catch (FeignException e) {
+            throw new BusinessException(TransactionCode.FEIGN_SERVICE_ERROR);
+        }
+
+        DefaultMessageResponse response = new DefaultMessageResponse();
+        DefaultMessageBody body = new DefaultMessageBody("Games changed successfully");
+        response.setBody(new BaseBody<>(body));
+        response.setStatus(new Status(TransactionCode.DEFAULT_100));
+        return response;
+    }
+
+    @Override
+    public DefaultMessageResponse changeKeywords(String token, ChangeDetailRequest changeKeywordsRequest) {
+        List<String> newKeywords = changeKeywordsRequest.getGamesOrKeywordsList();
+        String email = jwtService.extractUsername(token);
+        Gamer gamer = checkGamer(email);
+        gamer.getKeywords().clear();
+        mapAndSetKeywords(gamer, newKeywords);
+        gamerRepository.save(gamer);
+
+        try {
+            updateDataFeignService.updateData();
+        } catch (FeignException e) {
+            throw new BusinessException(TransactionCode.FEIGN_SERVICE_ERROR);
+        }
+
+        DefaultMessageResponse response = new DefaultMessageResponse();
+        DefaultMessageBody body = new DefaultMessageBody("Keywords changed successfully");
+        response.setBody(new BaseBody<>(body));
+        response.setStatus(new Status(TransactionCode.DEFAULT_100));
+        return response;
+    }
+
     private int getRandomNumber() {
         return random.nextInt(900000) + 100000;
     }
@@ -382,7 +440,7 @@ public class DefaultAuthService implements AuthService {
     private void mapAndSetKeywords(Gamer gamer, List<String> keyWords) {
         keyWords.forEach(keyword -> {
             Keywords keywords = keywordsRepository
-                    .findById(keyword)
+                    .findById(UUID.fromString(keyword))
                     .orElseThrow(() -> new BusinessException(TransactionCode.DB_ERROR));
             gamer.getKeywords().add(keywords);
         });
