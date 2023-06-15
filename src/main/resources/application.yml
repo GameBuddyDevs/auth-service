@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://l2.eren.wtf:5432/gamebuddydb
     username: gamebuddy
-    password: 3uT4}dpjK2PUk2#n
+    password: 3uT4}dpjK2PUk2#n  #old
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -19,7 +19,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: noreply.gamebuddy@gmail.com
-    password: wkqmkfqtjiidqkks
+    password: wkqmkfqtjiidqkks  #old
     properties:
       mail:
         smtp:
@@ -38,7 +38,7 @@ springdoc:
     path: /api-docs
 
 update-service:
-  url: http://l2.eren.wtf:4566
+  url: http://l2.eren.wtf:4566  #old
 
 feign:
   client:
