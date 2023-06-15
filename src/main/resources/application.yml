@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://l2.eren.wtf:5432/gamebuddydb
-    username: gamebuddy
-    password: 3uT4}dpjK2PUk2#n  #old
+    url: # enter jdbc url
+    username: # enter username
+    password: # enter password
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -11,15 +11,15 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        default_schema: schauth
+        default_schema: # enter schema name
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
   mail:
     host: smtp.gmail.com
     port: 587
-    username: noreply.gamebuddy@gmail.com
-    password: wkqmkfqtjiidqkks  #old
+    username: # enter sender mail
+    password: # enter mail password
     properties:
       mail:
         smtp:
@@ -29,7 +29,7 @@ spring:
   data:
     mongodb:
       uri: #enter mongodb url
-      database: gamebuddy
+      database: # enter database name
 
 springdoc:
   swagger-ui:
@@ -38,7 +38,7 @@ springdoc:
     path: /api-docs
 
 update-service:
-  url: http://l2.eren.wtf:4566  #old
+  url: # enter ai model api url
 
 feign:
   client:
