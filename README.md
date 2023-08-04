@@ -222,3 +222,7 @@ To containerize the GameBuddy Auth Service using Docker, follow the steps below:
  `docker run -d -p 4567:4567 --name gamebuddy-auth gamebuddy-auth-service`
 
  This will start the GameBuddy Auth Service container, and it will be accessible at http://localhost:4567.
+
+ 
+## LICENSE
+This project is licensed under the MIT License.
